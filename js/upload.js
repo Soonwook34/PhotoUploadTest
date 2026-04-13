@@ -4,10 +4,7 @@ import { storage, db } from './firebase-config.js';
 
 const MAX_FILES = 50;
 const MAX_IMAGE_SIZE = 50 * 1024 * 1024;  // 50MB
-const MAX_VIDEO_SIZE = 200 * 1024 * 1024;  // 200MB
-const COMPRESS_THRESHOLD = 500 * 1024;      // 500KB
-const COMPRESS_MAX_WIDTH = 1920;
-const COMPRESS_QUALITY = 0.8;
+const MAX_VIDEO_SIZE = 1024 * 1024 * 1024;  // 1GB
 const CONCURRENT_UPLOADS = 3;
 
 /**
@@ -65,59 +62,6 @@ export function validateFiles(files, uid) {
   }
 
   return { valid, errors };
-}
-
-/**
- * 이미지를 클라이언트에서 압축합니다.
- * @returns {Promise<Blob>}
- */
-export async function compressImage(file) {
-  if (file.size <= COMPRESS_THRESHOLD || !file.type.startsWith('image/')) {
-    return file;
-  }
-
-  // HEIC 등 지원되지 않는 포맷은 압축 건너뛰기
-  try {
-    const bitmap = await createImageBitmap(file);
-    const { width, height } = bitmap;
-
-    // 이미 충분히 작으면 건너뛰기
-    if (width <= COMPRESS_MAX_WIDTH && height <= COMPRESS_MAX_WIDTH) {
-      if (file.size <= COMPRESS_THRESHOLD * 2) {
-        bitmap.close();
-        return file;
-      }
-    }
-
-    // 비율 유지하며 리사이즈
-    let targetWidth = width;
-    let targetHeight = height;
-    if (width > COMPRESS_MAX_WIDTH || height > COMPRESS_MAX_WIDTH) {
-      if (width > height) {
-        targetWidth = COMPRESS_MAX_WIDTH;
-        targetHeight = Math.round(height * (COMPRESS_MAX_WIDTH / width));
-      } else {
-        targetHeight = COMPRESS_MAX_WIDTH;
-        targetWidth = Math.round(width * (COMPRESS_MAX_WIDTH / height));
-      }
-    }
-
-    const canvas = new OffscreenCanvas(targetWidth, targetHeight);
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(bitmap, 0, 0, targetWidth, targetHeight);
-    bitmap.close();
-
-    const blob = await canvas.convertToBlob({
-      type: 'image/jpeg',
-      quality: COMPRESS_QUALITY
-    });
-
-    // 압축 결과가 원본보다 크면 원본 사용
-    return blob.size < file.size ? blob : file;
-  } catch {
-    // createImageBitmap 실패 시 (HEIC 등) 원본 반환
-    return file;
-  }
 }
 
 /**
@@ -270,12 +214,10 @@ export async function uploadAll(files, uid, uploaderName, callbacks) {
     active.add(index);
 
     try {
-      // 이미지 압축
-      const compressed = await compressImage(file);
-      const contentType = compressed === file ? file.type : 'image/jpeg';
+      const contentType = file.type;
 
       await uploadSingleFile(
-        compressed,
+        file,
         file.name,
         contentType,
         uid,
