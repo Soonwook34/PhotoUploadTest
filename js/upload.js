@@ -64,7 +64,7 @@ export function validateFiles(files, uid) {
   return { valid, errors };
 }
 
-const THUMB_MAX_SIZE = 800;
+const THUMB_MAX_SIZE = 1200;
 const THUMB_QUALITY = 0.7;
 
 /**
