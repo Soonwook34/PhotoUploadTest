@@ -13,14 +13,13 @@ const PHOTOS_COLLECTION = 'photos';
  * @returns {Promise<{docs: Array, items: Array, hasMore: boolean}>}
  */
 export async function loadPhotos(filter = 'all', lastDoc = null, pageSize = PAGE_SIZE) {
-  const constraints = [
-    orderBy('createdAt', 'desc'),
-    limit(pageSize)
-  ];
+  const constraints = [orderBy('createdAt', 'desc')];
 
   if (lastDoc) {
     constraints.push(startAfter(lastDoc));
   }
+
+  constraints.push(limit(pageSize));
 
   const q = query(collection(db, PHOTOS_COLLECTION), ...constraints);
   const snapshot = await getDocs(q);
@@ -30,7 +29,6 @@ export async function loadPhotos(filter = 'all', lastDoc = null, pageSize = PAGE
     ...doc.data()
   }));
 
-  // 클라이언트 사이드 필터링 (Firestore 복합 인덱스 불필요)
   if (filter === 'image') {
     items = items.filter(item => item.contentType && item.contentType.startsWith('image/'));
   } else if (filter === 'video') {
@@ -39,6 +37,7 @@ export async function loadPhotos(filter = 'all', lastDoc = null, pageSize = PAGE
 
   return {
     docs: snapshot.docs,
+    lastDoc: snapshot.docs[snapshot.docs.length - 1] || null,
     items,
     hasMore: snapshot.docs.length === pageSize
   };

@@ -7,10 +7,12 @@ let currentUser = null;
 let currentScreen = 'landing';
 let selectedFiles = [];
 let galleryItems = [];
+let galleryLoadedIds = new Set();
 let galleryLastDoc = null;
 let galleryHasMore = false;
 let galleryFilter = 'all';
 let isUploading = false;
+let isLoadingGallery = false;
 
 // === DOM References ===
 const loadingScreen = document.getElementById('loading-screen');
@@ -366,9 +368,13 @@ function resetUploadScreen() {
 
 // === Gallery ===
 async function loadGallery(reset = false) {
+  if (isLoadingGallery) return;
+  isLoadingGallery = true;
+
   if (reset) {
     galleryGrid.innerHTML = '';
     galleryItems = [];
+    galleryLoadedIds = new Set();
     galleryLastDoc = null;
     galleryHasMore = false;
   }
@@ -378,19 +384,21 @@ async function loadGallery(reset = false) {
   btnLoadMore.hidden = true;
 
   try {
-    const { docs, items, hasMore } = await loadPhotos(
+    const { lastDoc, items, hasMore } = await loadPhotos(
       galleryFilter,
       galleryLastDoc
     );
 
-    galleryLastDoc = docs[docs.length - 1] || null;
+    galleryLastDoc = lastDoc;
     galleryHasMore = hasMore;
 
-    // DOM에 추가
-    if (items.length > 0) {
-      galleryItems = [...galleryItems, ...items];
+    // 중복 제거 후 DOM에 추가
+    const newItems = items.filter(item => !galleryLoadedIds.has(item.id));
+    if (newItems.length > 0) {
+      newItems.forEach(item => galleryLoadedIds.add(item.id));
+      galleryItems = [...galleryItems, ...newItems];
       const startIndex = galleryGrid.children.length;
-      items.forEach((item, i) => {
+      newItems.forEach((item, i) => {
         const el = renderGalleryItem(item, startIndex + i);
         el.addEventListener('click', () => {
           const idx = galleryItems.findIndex(gi => gi.id === item.id);
@@ -400,7 +408,6 @@ async function loadGallery(reset = false) {
       });
     }
 
-    // 빈 상태: 아이템이 하나도 없을 때
     galleryEmpty.hidden = galleryItems.length > 0;
     btnLoadMore.hidden = !galleryHasMore;
   } catch (error) {
@@ -408,6 +415,7 @@ async function loadGallery(reset = false) {
     showToast('사진을 불러올 수 없습니다. 다시 시도해 주세요.', 'error');
   } finally {
     galleryLoading.hidden = true;
+    isLoadingGallery = false;
   }
 }
 
