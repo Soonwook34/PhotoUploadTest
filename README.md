@@ -2,7 +2,7 @@
 
 결혼식 하객들이 모바일로 접속하여 사진과 동영상을 업로드하고, 공유된 사진을 갤러리로 볼 수 있는 웹 페이지입니다.
 
-**Live**: https://soonwook34.github.io/PhotoUploadTest/
+**Live**: (비공개)
 
 ---
 
@@ -76,7 +76,7 @@ const firebaseConfig = {
 1. GitHub 레포지토리 > **Settings** > **Pages**
 2. Source: **Deploy from a branch**
 3. Branch: **main** / **/ (root)** 선택 > **Save**
-4. 1~2분 후 `https://soonwook34.github.io/PhotoUploadTest/` 에서 접속 가능
+4. 1~2분 후 GitHub Pages URL에서 접속 가능
 
 ---
 

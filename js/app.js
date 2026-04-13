@@ -544,70 +544,64 @@ function initMasonry() {
   });
 }
 
-function renderGalleryItems(items) {
+function renderGalleryItems() {
+  applyGalleryFilter();
+}
+
+function applyGalleryFilter() {
   if (masonryInstance) {
     masonryInstance.destroy();
     masonryInstance = null;
   }
   galleryGrid.innerHTML = '';
-  items.forEach(item => {
+
+  const filtered = galleryItems.filter(item => {
+    if (galleryFilter === 'image') return item.contentType?.startsWith('image/');
+    if (galleryFilter === 'video') return item.contentType?.startsWith('video/');
+    return true;
+  });
+
+  filtered.forEach(item => {
     const el = renderGalleryItem(item);
     el.addEventListener('click', () => openLightboxForItem(item));
     galleryGrid.appendChild(el);
   });
-  applyGalleryFilter();
-  initMasonry();
-}
 
-function applyGalleryFilter() {
-  const items = galleryGrid.querySelectorAll('.gallery-item');
-
-  if (items.length === 0 && galleryItems.length > 0) {
-    renderGalleryItems(galleryItems);
-    return;
-  }
-
-  let visibleCount = 0;
-  items.forEach(el => {
-    const ct = el.dataset.contentType || '';
-    const show = galleryFilter === 'all'
-      || (galleryFilter === 'image' && ct.startsWith('image/'))
-      || (galleryFilter === 'video' && ct.startsWith('video/'));
-    el.style.display = show ? '' : 'none';
-    if (show) visibleCount++;
-  });
-
-  galleryEmpty.hidden = visibleCount > 0;
+  galleryEmpty.hidden = filtered.length > 0;
   hideGalleryLoading();
   btnLoadMore.hidden = !galleryHasMore;
 
-  if (masonryInstance) masonryInstance.layout();
+  initMasonry();
 }
 
 // 더보기: 새 항목만 현재 그리드에 추가 (전체 재렌더링 없음)
 function appendNewGalleryItems(items) {
-  if (items.length === 0) {
-    btnLoadMore.hidden = !galleryHasMore;
-    return;
-  }
+  btnLoadMore.hidden = !galleryHasMore;
+  if (items.length === 0) return;
+
+  // 현재 필터에 맞는 항목만 추가
+  const filtered = items.filter(item => {
+    if (galleryFilter === 'image') return item.contentType?.startsWith('image/');
+    if (galleryFilter === 'video') return item.contentType?.startsWith('video/');
+    return true;
+  });
+
+  if (filtered.length === 0) return;
 
   const newElements = [];
-  items.forEach(item => {
+  filtered.forEach(item => {
     const el = renderGalleryItem(item);
     el.addEventListener('click', () => openLightboxForItem(item));
     galleryGrid.appendChild(el);
     newElements.push(el);
   });
 
-  // Masonry에 먼저 등록 → 필터 적용 → 이미지 로드 시 relayout
   if (masonryInstance) {
     masonryInstance.appended(newElements);
     imagesLoaded(newElements).on('progress', () => {
       if (masonryInstance) masonryInstance.layout();
     });
   }
-
-  applyGalleryFilter();
 }
 
 // 라이트박스 열기 (현재 필터 기준 visible 아이템 목록 사용)
