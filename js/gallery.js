@@ -9,11 +9,11 @@ const PHOTOS_COLLECTION = 'photos';
 
 /**
  * 사진 목록을 Firestore에서 가져옵니다.
- * @param {'all'|'image'|'video'} filter
  * @param {*} lastDoc - 페이지네이션 커서
- * @returns {Promise<{docs: Array, items: Array, hasMore: boolean}>}
+ * @param {number} pageSize - 가져올 개수
+ * @returns {Promise<{items: Array, lastDoc: *, hasMore: boolean}>}
  */
-export async function loadPhotos(filter = 'all', lastDoc = null, pageSize = INITIAL_PAGE_SIZE) {
+export async function loadPhotos(lastDoc = null, pageSize = INITIAL_PAGE_SIZE) {
   const constraints = [orderBy('createdAt', 'desc')];
 
   if (lastDoc) {
@@ -25,19 +25,12 @@ export async function loadPhotos(filter = 'all', lastDoc = null, pageSize = INIT
   const q = query(collection(db, PHOTOS_COLLECTION), ...constraints);
   const snapshot = await getDocs(q);
 
-  let items = snapshot.docs.map(doc => ({
+  const items = snapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
   }));
 
-  if (filter === 'image') {
-    items = items.filter(item => item.contentType && item.contentType.startsWith('image/'));
-  } else if (filter === 'video') {
-    items = items.filter(item => item.contentType && item.contentType.startsWith('video/'));
-  }
-
   return {
-    docs: snapshot.docs,
     lastDoc: snapshot.docs[snapshot.docs.length - 1] || null,
     items,
     hasMore: snapshot.docs.length === pageSize
@@ -88,8 +81,7 @@ export function renderGalleryItem(item, index) {
   } else {
     div.innerHTML = `
       <img src="${item.thumbnailUrl || item.url}" alt="" loading="lazy">
-      ${item.uploaderName && item.uploaderName !== 'anonymous'
-        ? `<span class="uploader-tag">${escapeHtml(item.uploaderName)}</span>` : ''}
+      ${uploaderTag}
     `;
   }
 
@@ -237,7 +229,7 @@ function formatDate(date) {
   return `${m}월 ${d}일 ${h}:${min}`;
 }
 
-function escapeHtml(str) {
+export function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;

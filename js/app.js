@@ -1,6 +1,6 @@
 import { ensureAuth } from './firebase-config.js';
 import { validateFiles, generateThumbnail, uploadAll, getUploadedCount } from './upload.js';
-import { loadPhotos, getPhotoCount, renderGalleryItem, renderBackgroundGallery, Lightbox, INITIAL_PAGE_SIZE, MORE_PAGE_SIZE } from './gallery.js';
+import { loadPhotos, getPhotoCount, renderGalleryItem, renderBackgroundGallery, Lightbox, INITIAL_PAGE_SIZE, MORE_PAGE_SIZE, escapeHtml } from './gallery.js';
 
 // === State ===
 let currentUser = null;
@@ -82,7 +82,7 @@ async function init() {
 
     // 배경 갤러리 + 사진 수를 병렬 로드 (20개 로드하여 갤러리 캐시로도 재사용)
     const [photosResult, count] = await Promise.all([
-      loadPhotos('all', null, INITIAL_PAGE_SIZE),
+      loadPhotos(null, INITIAL_PAGE_SIZE),
       getPhotoCount()
     ]);
     renderBackgroundGallery(photosResult.items, bgGallery);
@@ -218,13 +218,7 @@ async function handleFiles(fileList) {
   renderPreviews();
 }
 
-function revokePreviewUrls() {
-  // blob URL이 더 이상 생성되지 않으므로 no-op
-}
-
 function renderPreviews() {
-  revokePreviewUrls();
-
   if (selectedFiles.length === 0) {
     filePreview.hidden = true;
     dropZone.style.display = '';
@@ -363,7 +357,6 @@ async function startUpload() {
 }
 
 function resetUploadScreen() {
-  revokePreviewUrls();
   selectedFiles = [];
   isUploading = false;
 
@@ -402,7 +395,6 @@ async function loadGallery(reset = false) {
   try {
     const pageSize = reset ? INITIAL_PAGE_SIZE : MORE_PAGE_SIZE;
     const { lastDoc, items, hasMore } = await loadPhotos(
-      'all',
       galleryLastDoc,
       pageSize
     );
@@ -468,13 +460,6 @@ function showToast(message, type = 'info') {
   setTimeout(() => {
     toast.remove();
   }, 3000);
-}
-
-// === Utility ===
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
 }
 
 // === Start ===
