@@ -244,16 +244,24 @@ function renderPreviews() {
 
   // 2단계: 썸네일을 병렬로 생성하여 스켈레톤 교체
   selectedFiles.forEach(async (file, i) => {
-    const thumbUrl = await generateThumbnail(file);
+    const thumb = await generateThumbnail(file);
     const div = document.getElementById(`preview-${i}`);
-    if (div && thumbUrl) {
-      const skeleton = div.querySelector('.skeleton');
-      if (skeleton) {
-        const img = document.createElement('img');
-        img.src = thumbUrl;
-        img.alt = '';
-        skeleton.replaceWith(img);
-      }
+    if (!div || !thumb.url) return;
+    const skeleton = div.querySelector('.skeleton');
+    if (!skeleton) return;
+
+    if (thumb.type === 'video') {
+      const video = document.createElement('video');
+      video.src = thumb.url;
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = 'metadata';
+      skeleton.replaceWith(video);
+    } else {
+      const img = document.createElement('img');
+      img.src = thumb.url;
+      img.alt = '';
+      skeleton.replaceWith(img);
     }
   });
 }
@@ -271,7 +279,7 @@ async function startUpload() {
   uploadProgress.hidden = false;
   uploadComplete.hidden = true;
 
-  progressText.textContent = '업로드 준비 중...';
+  progressText.textContent = '업로드 중...';
   progressCount.textContent = `0/${files.length}`;
   progressBar.style.width = '0%';
 

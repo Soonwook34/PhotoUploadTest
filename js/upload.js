@@ -104,56 +104,21 @@ export async function createDisplayThumbnail(file) {
 
 /**
  * 미리보기 썸네일을 생성합니다.
- * @returns {Promise<string>} Data URL
+ * 이미지: Data URL 문자열 반환
+ * 영상: Object URL 문자열 반환 (video 태그용)
+ * @returns {Promise<{type: 'image'|'video', url: string}>}
  */
 export async function generateThumbnail(file) {
   if (file.type.startsWith('video/')) {
-    return generateVideoThumbnail(file);
+    // 영상은 Object URL을 바로 반환 (video 태그에서 직접 재생)
+    return { type: 'video', url: URL.createObjectURL(file) };
   }
 
   return new Promise((resolve) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => resolve('');
+    reader.onload = () => resolve({ type: 'image', url: reader.result });
+    reader.onerror = () => resolve({ type: 'image', url: '' });
     reader.readAsDataURL(file);
-  });
-}
-
-function generateVideoThumbnail(file) {
-  return new Promise((resolve) => {
-    const video = document.createElement('video');
-    video.preload = 'metadata';
-    video.muted = true;
-    video.playsInline = true;
-
-    const url = URL.createObjectURL(file);
-    video.src = url;
-
-    video.onloadeddata = () => {
-      video.currentTime = Math.min(1, video.duration / 2);
-    };
-
-    video.onseeked = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 300;
-      canvas.height = Math.round(300 * (video.videoHeight / video.videoWidth)) || 300;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-      URL.revokeObjectURL(url);
-      resolve(dataUrl);
-    };
-
-    video.onerror = () => {
-      URL.revokeObjectURL(url);
-      resolve('');
-    };
-
-    // 타임아웃 (3초 내에 못 만들면 빈 썸네일)
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-      resolve('');
-    }, 3000);
   });
 }
 
