@@ -70,12 +70,12 @@ async function init() {
   try {
     currentUser = await ensureAuth();
 
-    // 배경 갤러리 로드
-    const { items } = await loadPhotos('all', null, 12);
+    // 배경 갤러리 + 사진 수를 병렬 로드
+    const [{ items }, count] = await Promise.all([
+      loadPhotos('all', null, 12),
+      getPhotoCount()
+    ]);
     renderBackgroundGallery(items, bgGallery);
-
-    // 사진 수 표시
-    const count = await getPhotoCount();
     if (count > 0) {
       photoCount.textContent = `지금까지 ${count}장의 사진이 공유되었습니다`;
     }
@@ -202,7 +202,7 @@ async function handleFiles(fileList) {
   renderPreviews();
 }
 
-async function renderPreviews() {
+function renderPreviews() {
   if (selectedFiles.length === 0) {
     filePreview.hidden = true;
     dropZone.style.display = '';
@@ -217,31 +217,20 @@ async function renderPreviews() {
 
   previewGrid.innerHTML = '';
 
-  for (let i = 0; i < selectedFiles.length; i++) {
-    const file = selectedFiles[i];
+  // 1단계: 스켈레톤 플레이스홀더를 즉시 렌더링
+  selectedFiles.forEach((file, i) => {
     const div = document.createElement('div');
     div.className = 'preview-item';
-
-    // 썸네일 생성
-    const thumbUrl = await generateThumbnail(file);
-
-    if (file.type.startsWith('video/')) {
-      div.innerHTML = `
-        <img src="${thumbUrl || ''}" alt="">
-        <span class="video-badge">영상</span>
-        <button class="preview-remove" data-index="${i}">&times;</button>
-      `;
-    } else {
-      div.innerHTML = `
-        <img src="${thumbUrl || ''}" alt="">
-        <button class="preview-remove" data-index="${i}">&times;</button>
-      `;
-    }
-
+    div.id = `preview-${i}`;
+    div.innerHTML = `
+      <div class="skeleton" style="width:100%;height:100%"></div>
+      ${file.type.startsWith('video/') ? '<span class="video-badge">영상</span>' : ''}
+      <button class="preview-remove" data-index="${i}">&times;</button>
+    `;
     previewGrid.appendChild(div);
-  }
+  });
 
-  // 삭제 버튼 이벤트
+  // 삭제 버튼 이벤트 바로 연결
   previewGrid.querySelectorAll('.preview-remove').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -252,6 +241,21 @@ async function renderPreviews() {
   });
 
   btnStartUpload.disabled = selectedFiles.length === 0;
+
+  // 2단계: 썸네일을 병렬로 생성하여 스켈레톤 교체
+  selectedFiles.forEach(async (file, i) => {
+    const thumbUrl = await generateThumbnail(file);
+    const div = document.getElementById(`preview-${i}`);
+    if (div && thumbUrl) {
+      const skeleton = div.querySelector('.skeleton');
+      if (skeleton) {
+        const img = document.createElement('img');
+        img.src = thumbUrl;
+        img.alt = '';
+        skeleton.replaceWith(img);
+      }
+    }
+  });
 }
 
 // === Upload ===
@@ -278,7 +282,7 @@ async function startUpload() {
     item.className = 'progress-file-item';
     item.id = `progress-file-${i}`;
     item.innerHTML = `
-      <span class="file-status">⏳</span>
+      <span class="file-status"><span class="spinner-tiny"></span></span>
       <span class="file-name">${escapeHtml(file.name)}</span>
     `;
     progressFiles.appendChild(item);
@@ -294,7 +298,9 @@ async function startUpload() {
       completedCount++;
       const item = document.getElementById(`progress-file-${index}`);
       if (item) {
-        item.querySelector('.file-status').textContent = success ? '✓' : '✗';
+        item.querySelector('.file-status').innerHTML = success
+          ? '<svg class="icon-check" viewBox="0 0 16 16"><path d="M3 8l4 4 6-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>'
+          : '<svg class="icon-x" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
         item.classList.add(success ? 'done' : 'error');
       }
       progressCount.textContent = `${completedCount}/${files.length}`;

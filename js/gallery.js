@@ -77,7 +77,7 @@ export function renderGalleryItem(item, index) {
     `;
   } else {
     div.innerHTML = `
-      <img src="${item.url}" alt="" loading="lazy">
+      <img src="${item.thumbnailUrl || item.url}" alt="" loading="lazy">
       ${item.uploaderName && item.uploaderName !== 'anonymous'
         ? `<span class="uploader-tag">${escapeHtml(item.uploaderName)}</span>` : ''}
     `;
@@ -101,7 +101,7 @@ export function renderBackgroundGallery(items, container) {
 
   for (const item of images) {
     const img = document.createElement('img');
-    img.src = item.url;
+    img.src = item.thumbnailUrl || item.url;
     img.alt = '';
     img.loading = 'lazy';
     container.appendChild(img);

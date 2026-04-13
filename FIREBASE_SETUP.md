@@ -115,8 +115,15 @@ service firebase.storage {
       allow read: if true;
       allow write: if request.auth != null
         && request.auth.uid == uid
-        && request.resource.size < 200 * 1024 * 1024
+        && request.resource.size < 1073741824
         && request.resource.contentType.matches('image/.*|video/.*');
+    }
+    match /thumbnails/{uid}/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 1048576
+        && request.resource.contentType == 'image/jpeg';
     }
   }
 }
@@ -129,7 +136,8 @@ service firebase.storage {
 |------|------|
 | `allow read: if true` | 누구나 파일 열람 가능 |
 | `request.auth.uid == uid` | 본인 폴더에만 업로드 가능 |
-| `request.resource.size < 200MB` | 파일 크기 200MB 제한 |
+| uploads: `size < 1073741824` | 원본 파일 1GB 제한 |
+| thumbnails: `size < 1048576` | 썸네일 1MB 제한, JPEG만 |
 | `contentType.matches('image/.*\|video/.*')` | 이미지/동영상만 허용 |
 
 ---

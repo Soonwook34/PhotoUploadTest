@@ -54,7 +54,7 @@ export function validateFiles(files, uid) {
     }
 
     if (isVideo && file.size > MAX_VIDEO_SIZE) {
-      errors.push(`"${file.name}" - 영상은 최대 200MB까지 가능합니다.`);
+      errors.push(`"${file.name}" - 영상은 최대 1GB까지 가능합니다.`);
       continue;
     }
 
@@ -62,6 +62,44 @@ export function validateFiles(files, uid) {
   }
 
   return { valid, errors };
+}
+
+const THUMB_MAX_SIZE = 800;
+const THUMB_QUALITY = 0.7;
+
+/**
+ * 갤러리 표시용 썸네일을 생성합니다 (800px, JPEG 70%).
+ * 원본은 그대로 보존되고, 이 썸네일은 별도 경로에 업로드됩니다.
+ * @returns {Promise<Blob|null>}
+ */
+export async function createDisplayThumbnail(file) {
+  if (!file.type.startsWith('image/')) return null;
+
+  try {
+    const bitmap = await createImageBitmap(file);
+    const { width, height } = bitmap;
+
+    let targetWidth = width;
+    let targetHeight = height;
+    if (width > THUMB_MAX_SIZE || height > THUMB_MAX_SIZE) {
+      if (width > height) {
+        targetWidth = THUMB_MAX_SIZE;
+        targetHeight = Math.round(height * (THUMB_MAX_SIZE / width));
+      } else {
+        targetHeight = THUMB_MAX_SIZE;
+        targetWidth = Math.round(width * (THUMB_MAX_SIZE / height));
+      }
+    }
+
+    const canvas = new OffscreenCanvas(targetWidth, targetHeight);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bitmap, 0, 0, targetWidth, targetHeight);
+    bitmap.close();
+
+    return await canvas.convertToBlob({ type: 'image/jpeg', quality: THUMB_QUALITY });
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -129,54 +167,64 @@ function generateVideoThumbnail(file) {
  * @param {function} onProgress - 진행률 콜백 (0~1)
  * @returns {Promise<{url: string, storagePath: string}>}
  */
-function uploadSingleFile(fileBlob, originalName, contentType, uid, uploaderName, onProgress) {
-  return new Promise((resolve, reject) => {
-    const timestamp = Date.now();
-    const safeName = originalName.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const path = `uploads/${uid}/${timestamp}_${safeName}`;
-    const storageRef = ref(storage, path);
+async function uploadSingleFile(file, originalName, contentType, uid, uploaderName, onProgress) {
+  const timestamp = Date.now();
+  const safeName = originalName.replace(/[^a-zA-Z0-9._-]/g, '_');
 
-    const metadata = {
-      contentType: contentType,
-      customMetadata: {
-        uploaderName: uploaderName || 'anonymous',
-        originalName: originalName
-      }
-    };
+  // 원본 업로드
+  const path = `uploads/${uid}/${timestamp}_${safeName}`;
+  const storageRef = ref(storage, path);
+  const metadata = {
+    contentType: contentType,
+    customMetadata: {
+      uploaderName: uploaderName || 'anonymous',
+      originalName: originalName
+    }
+  };
 
-    const task = uploadBytesResumable(storageRef, fileBlob, metadata);
-
+  const url = await new Promise((resolve, reject) => {
+    const task = uploadBytesResumable(storageRef, file, metadata);
     task.on('state_changed',
-      (snapshot) => {
-        const progress = snapshot.bytesTransferred / snapshot.totalBytes;
-        onProgress(progress);
-      },
-      (error) => {
-        reject(error);
-      },
+      (snapshot) => onProgress(snapshot.bytesTransferred / snapshot.totalBytes),
+      reject,
       async () => {
-        try {
-          const url = await getDownloadURL(task.snapshot.ref);
-
-          // Firestore에 메타데이터 저장
-          await addDoc(collection(db, 'photos'), {
-            url,
-            fileName: originalName,
-            contentType: contentType,
-            size: fileBlob.size,
-            uid,
-            uploaderName: uploaderName || 'anonymous',
-            storagePath: path,
-            createdAt: serverTimestamp()
-          });
-
-          resolve({ url, storagePath: path });
-        } catch (error) {
-          reject(error);
-        }
+        try { resolve(await getDownloadURL(task.snapshot.ref)); }
+        catch (e) { reject(e); }
       }
     );
   });
+
+  // 썸네일 업로드 (이미지만, 실패해도 원본 업로드는 유지)
+  let thumbnailUrl = null;
+  if (contentType.startsWith('image/')) {
+    try {
+      const thumbBlob = await createDisplayThumbnail(file);
+      if (thumbBlob) {
+        const thumbPath = `thumbnails/${uid}/${timestamp}_${safeName}.jpg`;
+        const thumbRef = ref(storage, thumbPath);
+        const thumbMeta = { contentType: 'image/jpeg' };
+        await uploadBytesResumable(thumbRef, thumbBlob, thumbMeta);
+        thumbnailUrl = await getDownloadURL(thumbRef);
+      }
+    } catch (e) {
+      console.warn('Thumbnail upload failed, using original:', e);
+    }
+  }
+
+  // Firestore에 메타데이터 저장
+  await addDoc(collection(db, 'photos'), {
+    url,
+    thumbnailUrl,
+    fileName: originalName,
+    contentType: contentType,
+    size: file.size,
+    uid,
+    uploaderName: uploaderName || 'anonymous',
+    storagePath: path,
+    createdAt: serverTimestamp()
+  });
+
+  return { url, storagePath: path };
 }
 
 /**
