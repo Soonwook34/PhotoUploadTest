@@ -5,11 +5,18 @@
 - Firebase 처음 사용
 - iPhone Safari 환경에서 주로 테스트
 
+## 기술 스택
+- Vanilla HTML / CSS / JS (ES Modules, 빌드 도구 없음)
+- Firebase JS SDK v11.6.0 (CDN import) — Auth, Storage, Firestore
+- Masonry.js + imagesLoaded (갤러리 레이아웃)
+- exifr (EXIF 메타데이터 추출)
+- GitHub Pages 호스팅
+
 ## 핵심 원칙
 
 ### 파일 업로드
 - **원본 보존 필수**: 사진/영상은 절대 압축하지 않고 원본 그대로 저장. EXIF 메타데이터(촬영 날짜, GPS, 카메라 정보) 포함
-- **갤러리용 썸네일은 별도 생성**: 원본과 별개로 축소 이미지를 만들어 갤러리 표시용으로 사용 (현재: 긴 변 1200px, JPEG 70%)
+- **갤러리용 썸네일은 별도 생성**: 원본과 별개로 축소 이미지를 만들어 갤러리 표시용으로 사용 (현재: 긴 변 1440px, JPEG 70%)
 - **동영상도 썸네일 생성**: 업로드 시 첫 프레임을 캡처하여 JPEG 썸네일으로 저장
 
 ### 성능 / Firebase 비용 최적화
