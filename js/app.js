@@ -23,6 +23,7 @@ let galleryHasMore = false;
 let galleryFilter = 'all';
 let isUploading = false;
 let isLoadingGallery = false;
+let masonryInstance = null;
 
 // === DOM References ===
 const loadingScreen = document.getElementById('loading-screen');
@@ -82,7 +83,7 @@ function showScreen(name) {
         renderGalleryItems(galleryItems);
       }
     } else {
-      galleryLoading.hidden = false;
+      showGalleryLoading();
       galleryEmpty.hidden = true;
       btnLoadMore.hidden = true;
       if (!isLoadingGallery) {
@@ -95,6 +96,31 @@ function showScreen(name) {
 
 // === Initialize ===
 async function init() {
+  const spinner = loadingScreen.querySelector('.loading-spinner');
+  const text = loadingScreen.querySelector('.loading-text');
+  const retryBtn = document.getElementById('btn-retry-init');
+
+  // UI 초기화 (재시도 시)
+  spinner.style.display = '';
+  text.textContent = '잠시만 기다려 주세요';
+  retryBtn.hidden = true;
+  retryBtn.style.opacity = '0';
+
+  // 8초 후 "느림" 힌트 + 재시도 버튼 페이드인 (스피너 유지)
+  const slowTimer = setTimeout(() => {
+    text.textContent = '연결이 느립니다...';
+    retryBtn.hidden = false;
+    requestAnimationFrame(() => {
+      retryBtn.style.transition = 'opacity 0.5s ease';
+      retryBtn.style.opacity = '1';
+    });
+  }, 8000);
+
+  retryBtn.onclick = () => {
+    clearTimeout(slowTimer);
+    init();
+  };
+
   try {
     currentUser = await withTimeout(ensureAuth(), 10_000, 'Auth timed out');
 
@@ -103,6 +129,8 @@ async function init() {
       withTimeout(loadPhotos(null, INITIAL_PAGE_SIZE), 10_000, 'Photos load timed out'),
       withTimeout(getPhotoCount(), 5_000, 'Count timed out').catch(() => 0)
     ]);
+    clearTimeout(slowTimer);
+
     renderBackgroundGallery(photosResult.items, bgGallery);
     if (count > 0) {
       photoCount.textContent = `지금까지 ${count}장의 사진이 공유되었습니다`;
@@ -119,20 +147,12 @@ async function init() {
     screens.landing.classList.add('active');
     currentScreen = 'landing';
   } catch (error) {
+    clearTimeout(slowTimer);
     console.error('Initialization failed:', error);
-    const spinner = loadingScreen.querySelector('.loading-spinner');
-    const text = loadingScreen.querySelector('.loading-text');
-    const retryBtn = document.getElementById('btn-retry-init');
-
     spinner.style.display = 'none';
     text.textContent = '연결에 실패했습니다.';
     retryBtn.hidden = false;
-    retryBtn.onclick = () => {
-      retryBtn.hidden = true;
-      spinner.style.display = '';
-      text.textContent = '잠시만 기다려 주세요';
-      init();
-    };
+    retryBtn.style.opacity = '1';
   }
 }
 
@@ -242,14 +262,37 @@ async function handleFiles(fileList) {
 
   // 기존 선택에 추가 (50개 제한)
   const remaining = 50 - getUploadedCount(currentUser.uid) - selectedFiles.length;
-  const toAdd = valid.slice(0, Math.max(0, remaining));
+  const sliced = valid.slice(0, Math.max(0, remaining));
 
-  if (toAdd.length < valid.length) {
-    showToast(`최대 업로드 수를 초과하여 ${toAdd.length}개만 추가됩니다.`, 'error');
+  if (sliced.length < valid.length) {
+    showToast(`최대 업로드 수를 초과하여 ${sliced.length}개만 추가됩니다.`, 'error');
   }
 
+  // 중복 제거 (파일명 + 크기 + 수정일)
+  const existingKeys = new Set(
+    selectedFiles.map(f => `${f.name}_${f.size}_${f.lastModified}`)
+  );
+  const toAdd = sliced.filter(f => !existingKeys.has(`${f.name}_${f.size}_${f.lastModified}`));
+  const dupCount = sliced.length - toAdd.length;
+  if (dupCount > 0) {
+    showToast(`이미 선택된 파일 ${dupCount}개를 제외했습니다.`);
+  }
+
+  if (toAdd.length === 0) return;
+
+  const prevCount = selectedFiles.length;
   selectedFiles = [...selectedFiles, ...toAdd];
   renderPreviews();
+
+  // 추가 선택 시 마지막 미리보기로 auto-scroll
+  if (prevCount > 0) {
+    requestAnimationFrame(() => {
+      const lastPreview = previewGrid.lastElementChild;
+      if (lastPreview) {
+        lastPreview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+  }
 }
 
 function renderPreviews() {
@@ -304,7 +347,13 @@ function renderPreviews() {
     const skeleton = div.querySelector('.skeleton');
     if (!skeleton) return;
 
-    if (thumb.type === 'video') {
+    if (thumb.type === 'video-thumb' && thumb.url) {
+      // canvas 추출 성공: <img>로 표시 (iOS 호환)
+      const img = document.createElement('img');
+      img.src = thumb.url;
+      img.alt = '';
+      skeleton.replaceWith(img);
+    } else if (thumb.type === 'video') {
       if (thumb.url) {
         previewObjectURLs.push(thumb.url);
         const video = document.createElement('video');
@@ -388,6 +437,10 @@ async function startUpload() {
       galleryLoadedIds = new Set();
       galleryLastDoc = null;
       galleryHasMore = false;
+      if (masonryInstance) {
+        masonryInstance.destroy();
+        masonryInstance = null;
+      }
       galleryGrid.innerHTML = '';
 
       // 완료 화면 표시
@@ -427,6 +480,25 @@ function resetUploadScreen() {
 
 // === Gallery ===
 
+// 갤러리 로딩 스피너 안전 관리 (15초 safety timeout)
+let galleryLoadingTimer = null;
+
+function showGalleryLoading() {
+  galleryLoading.hidden = false;
+  clearTimeout(galleryLoadingTimer);
+  galleryLoadingTimer = setTimeout(() => {
+    hideGalleryLoading();
+    if (galleryGrid.children.length === 0) {
+      galleryEmpty.hidden = false;
+    }
+  }, 15000);
+}
+
+function hideGalleryLoading() {
+  galleryLoading.hidden = true;
+  clearTimeout(galleryLoadingTimer);
+}
+
 // 서버에서 데이터 로드 (필터 없이 전체 로드, 클라이언트에서 필터링)
 async function loadGallery(reset = false) {
   if (isLoadingGallery) return;
@@ -460,7 +532,7 @@ async function loadGallery(reset = false) {
   } finally {
     isLoadingGallery = false;
     btnLoadMore.disabled = false;
-    galleryLoading.hidden = true;
+    hideGalleryLoading();
     if (reset) {
       renderGalleryItems(galleryItems);
     } else {
@@ -469,8 +541,26 @@ async function loadGallery(reset = false) {
   }
 }
 
+// Masonry 초기화/재초기화
+function initMasonry() {
+  if (masonryInstance) masonryInstance.destroy();
+  masonryInstance = new Masonry(galleryGrid, {
+    itemSelector: '.gallery-item',
+    percentPosition: true,
+    gutter: 4,
+    transitionDuration: '0.2s'
+  });
+  imagesLoaded(galleryGrid).on('progress', () => {
+    if (masonryInstance) masonryInstance.layout();
+  });
+}
+
 // 전체 갤러리 아이템 렌더링 (초기 진입/캐시 렌더용)
 function renderGalleryItems(items) {
+  if (masonryInstance) {
+    masonryInstance.destroy();
+    masonryInstance = null;
+  }
   galleryGrid.innerHTML = '';
   items.forEach(item => {
     const el = renderGalleryItem(item);
@@ -478,6 +568,7 @@ function renderGalleryItems(items) {
     galleryGrid.appendChild(el);
   });
   applyGalleryFilter();
+  initMasonry();
 }
 
 // 클라이언트 사이드 필터링 (DOM 재생성 없이 visibility 토글)
@@ -501,8 +592,11 @@ function applyGalleryFilter() {
   });
 
   galleryEmpty.hidden = visibleCount > 0;
-  galleryLoading.hidden = true;
+  hideGalleryLoading();
   btnLoadMore.hidden = !galleryHasMore;
+
+  // Masonry relayout (hidden 아이템 건너뜀)
+  if (masonryInstance) masonryInstance.layout();
 }
 
 // 더보기: 새 항목만 현재 그리드에 추가 (전체 재렌더링 없음)
@@ -512,13 +606,23 @@ function appendNewGalleryItems(items) {
     return;
   }
 
+  const newElements = [];
   items.forEach(item => {
     const el = renderGalleryItem(item);
     el.addEventListener('click', () => openLightboxForItem(item));
     galleryGrid.appendChild(el);
+    newElements.push(el);
   });
 
   applyGalleryFilter();
+
+  // Masonry에 새 요소 추가
+  if (masonryInstance) {
+    masonryInstance.appended(newElements);
+    imagesLoaded(newElements).on('progress', () => {
+      if (masonryInstance) masonryInstance.layout();
+    });
+  }
 }
 
 // 라이트박스 열기 (현재 필터 기준 visible 아이템 목록 사용)

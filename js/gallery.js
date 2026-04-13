@@ -216,9 +216,7 @@ export class Lightbox {
       ? item.uploaderName : '';
     const date = item.takenAt?.toDate
       ? formatDate(item.takenAt.toDate())
-      : item.createdAt?.toDate
-        ? formatDate(item.createdAt.toDate())
-        : '';
+      : '';
 
     this.infoEl.textContent = [name, date].filter(Boolean).join(' · ');
 

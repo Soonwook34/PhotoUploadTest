@@ -6,7 +6,7 @@ import exifr from 'https://cdn.jsdelivr.net/npm/exifr/dist/lite.esm.js';
 const MAX_FILES = 50;
 const MAX_IMAGE_SIZE = 50 * 1024 * 1024;  // 50MB
 const MAX_VIDEO_SIZE = 1024 * 1024 * 1024;  // 1GB
-const CONCURRENT_UPLOADS = 3;
+const CONCURRENT_UPLOADS = 5;
 
 /**
  * 이미 업로드한 파일 수를 가져옵니다.
@@ -126,10 +126,6 @@ async function createImageThumbnail(file) {
 }
 
 function createVideoThumbnail(file) {
-  // iOS WebKit은 canvas.drawImage(video)를 지원하지 않음 (WebKit bug #153588)
-  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
-  if (isIOS) return Promise.resolve(null);
-
   return new Promise((resolve) => {
     const video = document.createElement('video');
     video.preload = 'auto';
@@ -174,14 +170,62 @@ function createVideoThumbnail(file) {
 }
 
 /**
+ * 비디오에서 첫 프레임을 추출하여 Data URL로 반환합니다.
+ * iOS 15+ 에서 canvas.drawImage(video) 정상 동작.
+ */
+function extractVideoFrame(blobUrl) {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    video.preload = 'auto';
+    video.muted = true;
+    video.playsInline = true;
+    video.src = blobUrl;
+
+    const timeout = setTimeout(() => reject(new Error('timeout')), 5000);
+
+    video.onloadeddata = () => {
+      video.currentTime = 0.001;
+    };
+
+    video.onseeked = () => {
+      try {
+        const w = video.videoWidth;
+        const h = video.videoHeight;
+        if (!w || !h) { clearTimeout(timeout); reject(new Error('no dimensions')); return; }
+        const scale = Math.min(300 / Math.max(w, h), 1);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(w * scale);
+        canvas.height = Math.round(h * scale);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        clearTimeout(timeout);
+        resolve(canvas.toDataURL('image/jpeg', 0.6));
+      } catch (e) {
+        clearTimeout(timeout);
+        reject(e);
+      }
+    };
+
+    video.onerror = () => { clearTimeout(timeout); reject(new Error('video error')); };
+  });
+}
+
+/**
  * 미리보기 썸네일을 생성합니다.
  * 이미지: Data URL 문자열 반환
- * 영상: Object URL 문자열 반환 (video 태그용)
- * @returns {Promise<{type: 'image'|'video', url: string}>}
+ * 영상: canvas 프레임 추출 시도, 실패 시 Object URL 폴백
+ * @returns {Promise<{type: 'image'|'video'|'video-thumb', url: string}>}
  */
 export async function generateThumbnail(file) {
   if (file.type.startsWith('video/')) {
-    return { type: 'video', url: URL.createObjectURL(file) };
+    const blobUrl = URL.createObjectURL(file);
+    try {
+      const dataUrl = await extractVideoFrame(blobUrl);
+      URL.revokeObjectURL(blobUrl);
+      return { type: 'video-thumb', url: dataUrl };
+    } catch {
+      return { type: 'video', url: blobUrl };
+    }
   }
 
   return new Promise((resolve) => {
@@ -263,7 +307,7 @@ async function uploadSingleFile(file, originalName, contentType, uid, uploaderNa
 }
 
 /**
- * 여러 파일을 동시 업로드합니다 (최대 3개씩).
+ * 여러 파일을 동시 업로드합니다 (최대 5개씩).
  * @param {File[]} files
  * @param {string} uid
  * @param {string} uploaderName

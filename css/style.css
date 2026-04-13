@@ -676,29 +676,28 @@ body {
 }
 
 .gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-}
-
-@media (min-width: 768px) {
-  .gallery-grid { grid-template-columns: repeat(4, 1fr); }
+  /* Masonry가 포지셔닝 처리 */
 }
 
 .gallery-item {
   position: relative;
-  aspect-ratio: 3/4;
+  width: calc((100% - 8px) / 3);
+  margin-bottom: 4px;
   border-radius: var(--radius-sm);
   overflow: hidden;
   cursor: pointer;
   background: var(--color-accent);
 }
 
+@media (min-width: 768px) {
+  .gallery-item {
+    width: calc((100% - 12px) / 4);
+  }
+}
+
 .gallery-item img,
 .gallery-item video {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
   display: block;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -711,7 +710,8 @@ body {
 
 .gallery-skeleton {
   width: 100%;
-  height: 100%;
+  min-height: 150px;
+  aspect-ratio: 3/4;
 }
 
 .gallery-item .video-overlay {
@@ -774,6 +774,10 @@ body {
   display: flex;
   justify-content: center;
   padding: 24px;
+}
+
+.gallery-loading[hidden] {
+  display: none;
 }
 
 .btn-load-more {
