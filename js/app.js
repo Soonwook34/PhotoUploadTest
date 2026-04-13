@@ -369,7 +369,10 @@ function resetUploadScreen() {
 
 // 서버에서 데이터 로드 (필터 없이 전체 로드, 클라이언트에서 필터링)
 async function loadGallery(reset = false) {
-  if (isLoadingGallery) return;
+  if (isLoadingGallery) {
+    galleryLoading.hidden = true;
+    return;
+  }
   isLoadingGallery = true;
 
   if (reset) {
@@ -397,9 +400,9 @@ async function loadGallery(reset = false) {
     showToast('사진을 불러올 수 없습니다. 다시 시도해 주세요.', 'error');
   } finally {
     isLoadingGallery = false;
+    galleryLoading.hidden = true;
+    applyGalleryFilter();
   }
-
-  applyGalleryFilter();
 }
 
 // 클라이언트 사이드 필터링 + DOM 렌더링
