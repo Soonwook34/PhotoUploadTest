@@ -95,7 +95,7 @@ export function renderBackgroundGallery(items, container) {
 
   if (images.length === 0) return;
 
-  // 뷰포트 크기 기반으로 필요한 이미지 수 계산
+  // 뷰포트를 채울 수 있도록 필요한 이미지 수 계산 (정사각형 셀 기준, 약간 넘치게)
   const gap = 4;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
@@ -106,15 +106,16 @@ export function renderBackgroundGallery(items, container) {
 
   const selected = images.slice(0, needed);
 
-  for (const item of selected) {
+  for (let i = 0; i < selected.length; i++) {
     const img = document.createElement('img');
-    img.src = item.thumbnailUrl || item.url;
+    img.src = selected[i].thumbnailUrl || selected[i].url;
     img.alt = '';
-    img.loading = 'lazy';
+    // 이미지 로드 완료 시 개별 fade-in (순서대로 약간의 딜레이)
+    img.onload = () => {
+      setTimeout(() => img.classList.add('loaded'), i * 60);
+    };
     container.appendChild(img);
   }
-
-  container.classList.add('loaded');
 }
 
 /**

@@ -191,10 +191,7 @@ body {
   inset: 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: 1fr;
   gap: 4px;
-  opacity: 0;
-  transition: opacity 1.5s ease;
   overflow: hidden;
 }
 
@@ -204,15 +201,17 @@ body {
   }
 }
 
-.bg-gallery.loaded {
-  opacity: 1;
-}
-
 .bg-gallery img {
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1;
   object-fit: cover;
   display: block;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.bg-gallery img.loaded {
+  opacity: 1;
 }
 
 .bg-overlay {
