@@ -90,12 +90,23 @@ export function renderBackgroundGallery(items, container) {
 
   if (items.length === 0) return;
 
-  // 최대 12장, 이미지만
   const images = items
-    .filter(item => item.contentType && item.contentType.startsWith('image/'))
-    .slice(0, 12);
+    .filter(item => item.contentType && item.contentType.startsWith('image/'));
 
-  for (const item of images) {
+  if (images.length === 0) return;
+
+  // 뷰포트 크기 기반으로 필요한 이미지 수 계산
+  const gap = 4;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const cols = vw >= 768 ? 4 : 3;
+  const cellSize = (vw - gap * (cols - 1)) / cols;
+  const rows = Math.ceil((vh + gap) / (cellSize + gap));
+  const needed = rows * cols;
+
+  const selected = images.slice(0, needed);
+
+  for (const item of selected) {
     const img = document.createElement('img');
     img.src = item.thumbnailUrl || item.url;
     img.alt = '';

@@ -1,13 +1,48 @@
-# CLAUDE.md
+# CLAUDE.md - 프로젝트 작업 가이드
 
-## Project Overview
-결혼식 하객 사진/영상 업로드 웹앱 (Vanilla JS + Firebase, GitHub Pages 호스팅)
+## 사용자 정보
+- 결혼식 사진/영상 업로드 웹앱 프로젝트 진행 중
+- Firebase 처음 사용
+- iPhone Safari 환경에서 주로 테스트
 
-## Tech Stack
-- Vanilla HTML / CSS / JS (ES Modules, no build tools)
-- Firebase JS SDK v11.6.0 (CDN import)
-- GitHub Pages hosting
+## 핵심 원칙
 
-## Conventions
-- 코드 수정 후 README.md에 반영할 변경사항이 있으면 함께 업데이트할 것
-- 커밋 시 README.md 변경분도 같이 포함할 것
+### 파일 업로드
+- **원본 보존 필수**: 사진/영상은 절대 압축하지 않고 원본 그대로 저장. EXIF 메타데이터(촬영 날짜, GPS, 카메라 정보) 포함
+- **갤러리용 썸네일은 별도 생성**: 원본과 별개로 축소 이미지를 만들어 갤러리 표시용으로 사용 (현재: 긴 변 1200px, JPEG 70%)
+- **동영상도 썸네일 생성**: 업로드 시 첫 프레임을 캡처하여 JPEG 썸네일으로 저장
+
+### 성능 / Firebase 비용 최적화
+- **Firebase 호출 최소화**: Firestore 읽기/쓰기 모두 과금 대상. 불필요한 서버 호출 없이 클라이언트 캐시 활용
+- **갤러리 데이터 캐싱**: init()에서 로드한 데이터를 갤러리 캐시로 재사용. 갤러리 재진입 시 서버 호출 없음. 업로드 완료 후에만 캐시 무효화
+- **필터는 클라이언트 사이드**: 전체/사진/영상 필터 전환 시 서버 재호출 없이 메모리 내 데이터로 즉시 필터링
+- **가볍고 효율적으로**: 파일 업로드라는 본연의 기능에 집중. 불필요한 라이브러리나 복잡한 로직 지양
+
+### 디자인
+- **메인 컬러**: #81DAD1 (teal/mint). 서브 컬러는 https://mycolor.space/?hex=%2381DAD1&sub=1 참고
+- **폰트**: Google Fonts - Orbit
+- **모바일 최적화**: 대부분의 하객이 모바일(iPhone)로 접속. 모바일 우선 설계
+- **부담스럽지 않은 톤**: 과장되지 않고 자연스러운 인사말과 UI
+
+### UX 주의사항
+- **iPhone Safari 호환**: blob URL video 미리보기 불가 → 플레이스홀더 사용
+- **HEIC/라이브포토 지원**: accept 속성에 .heic, .heif, .mov 명시
+- **업로드 미리보기 멈춤 방지**: 스켈레톤 먼저 렌더링 → 썸네일 비동기 생성
+- **로딩 표시 관리**: 더 이상 데이터가 없을 때 로딩 스피너 표시 금지. finally 블록에서 항상 스피너 해제
+- **이모지 아이콘 지양**: CSS 스피너, SVG 아이콘 사용 (예: 모래시계 ⏳ 대신 CSS 회전 스피너)
+
+### 코드 품질
+- **안 쓰는 코드 즉시 정리**: no-op 함수, 도달 불가능한 코드 경로, 사용되지 않는 파라미터 제거
+- **중복 코드 최소화**: 공통 유틸 함수는 한 곳에서 export하여 재사용
+- **빌드 도구 없음**: Vanilla HTML/CSS/JS + Firebase CDN. 단순함 유지
+
+### Firebase 보안
+- **API Key는 클라이언트 노출 허용** (Firebase 공식 입장). 대신:
+  - Google Cloud Console에서 HTTP 리퍼러 제한 설정
+  - Security Rules로 실제 접근 통제 (본인 UID 폴더만 쓰기, 이미지/동영상만, 크기 제한)
+  - Firestore는 읽기 공개, 생성만 가능, 수정/삭제 불가
+
+### Git / 배포
+- **GitHub Pages로 무료 호스팅**: main 브랜치 root에서 배포
+- **push 후 반영까지 1~3분 소요**: GitHub Actions 배포 상태 확인
+- **변경사항은 README.md, FIREBASE_SETUP.md에도 반영**: 업로드 크기 제한, 기능 변경 시 문서 업데이트
