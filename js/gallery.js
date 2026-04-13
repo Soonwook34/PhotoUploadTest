@@ -3,7 +3,8 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 import { db } from './firebase-config.js';
 
-const PAGE_SIZE = 15;
+export const INITIAL_PAGE_SIZE = 20;
+export const MORE_PAGE_SIZE = 15;
 const PHOTOS_COLLECTION = 'photos';
 
 /**
@@ -12,7 +13,7 @@ const PHOTOS_COLLECTION = 'photos';
  * @param {*} lastDoc - 페이지네이션 커서
  * @returns {Promise<{docs: Array, items: Array, hasMore: boolean}>}
  */
-export async function loadPhotos(filter = 'all', lastDoc = null, pageSize = PAGE_SIZE) {
+export async function loadPhotos(filter = 'all', lastDoc = null, pageSize = INITIAL_PAGE_SIZE) {
   const constraints = [orderBy('createdAt', 'desc')];
 
   if (lastDoc) {
@@ -65,15 +66,25 @@ export function renderGalleryItem(item, index) {
   div.style.animationDelay = `${index * 50}ms`;
   div.dataset.id = item.id;
 
+  const uploaderTag = item.uploaderName && item.uploaderName !== 'anonymous'
+    ? `<span class="uploader-tag">${escapeHtml(item.uploaderName)}</span>` : '';
+
   if (item.contentType && item.contentType.startsWith('video/')) {
-    div.innerHTML = `
-      <video src="${item.url}" preload="metadata" playsinline muted></video>
-      <div class="video-overlay">
-        <div class="play-icon"></div>
-      </div>
-      ${item.uploaderName && item.uploaderName !== 'anonymous'
-        ? `<span class="uploader-tag">${escapeHtml(item.uploaderName)}</span>` : ''}
-    `;
+    if (item.thumbnailUrl) {
+      // 썸네일이 있으면 이미지로 빠르게 표시 + 재생 오버레이
+      div.innerHTML = `
+        <img src="${item.thumbnailUrl}" alt="" loading="lazy">
+        <div class="video-overlay"><div class="play-icon"></div></div>
+        ${uploaderTag}
+      `;
+    } else {
+      // 썸네일 없으면 video 태그로 첫 프레임 시도
+      div.innerHTML = `
+        <video src="${item.url}" preload="metadata" playsinline muted></video>
+        <div class="video-overlay"><div class="play-icon"></div></div>
+        ${uploaderTag}
+      `;
+    }
   } else {
     div.innerHTML = `
       <img src="${item.thumbnailUrl || item.url}" alt="" loading="lazy">

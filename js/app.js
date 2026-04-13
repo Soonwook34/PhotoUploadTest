@@ -1,6 +1,6 @@
 import { ensureAuth } from './firebase-config.js';
 import { validateFiles, generateThumbnail, uploadAll, getUploadedCount } from './upload.js';
-import { loadPhotos, getPhotoCount, renderGalleryItem, renderBackgroundGallery, Lightbox } from './gallery.js';
+import { loadPhotos, getPhotoCount, renderGalleryItem, renderBackgroundGallery, Lightbox, INITIAL_PAGE_SIZE, MORE_PAGE_SIZE } from './gallery.js';
 
 // === State ===
 let currentUser = null;
@@ -383,9 +383,11 @@ async function loadGallery(reset = false) {
   }
 
   try {
+    const pageSize = reset ? INITIAL_PAGE_SIZE : MORE_PAGE_SIZE;
     const { lastDoc, items, hasMore } = await loadPhotos(
       'all',
-      galleryLastDoc
+      galleryLastDoc,
+      pageSize
     );
 
     galleryLastDoc = lastDoc;

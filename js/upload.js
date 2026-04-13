@@ -73,8 +73,16 @@ const THUMB_QUALITY = 0.7;
  * @returns {Promise<Blob|null>}
  */
 export async function createDisplayThumbnail(file) {
-  if (!file.type.startsWith('image/')) return null;
+  if (file.type.startsWith('image/')) {
+    return createImageThumbnail(file);
+  }
+  if (file.type.startsWith('video/')) {
+    return createVideoThumbnail(file);
+  }
+  return null;
+}
 
+async function createImageThumbnail(file) {
   try {
     const bitmap = await createImageBitmap(file);
     const { width, height } = bitmap;
@@ -100,6 +108,50 @@ export async function createDisplayThumbnail(file) {
   } catch {
     return null;
   }
+}
+
+function createVideoThumbnail(file) {
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    video.preload = 'auto';
+    video.muted = true;
+    video.playsInline = true;
+
+    const url = URL.createObjectURL(file);
+    video.src = url;
+
+    const cleanup = () => URL.revokeObjectURL(url);
+
+    video.onloadeddata = () => {
+      video.currentTime = Math.min(1, video.duration * 0.1);
+    };
+
+    video.onseeked = () => {
+      try {
+        const w = video.videoWidth;
+        const h = video.videoHeight;
+        const scale = Math.min(THUMB_MAX_SIZE / Math.max(w, h), 1);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(w * scale);
+        canvas.height = Math.round(h * scale);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(
+          (blob) => { cleanup(); resolve(blob); },
+          'image/jpeg',
+          THUMB_QUALITY
+        );
+      } catch {
+        cleanup();
+        resolve(null);
+      }
+    };
+
+    video.onerror = () => { cleanup(); resolve(null); };
+
+    // 5초 타임아웃
+    setTimeout(() => { cleanup(); resolve(null); }, 5000);
+  });
 }
 
 /**
@@ -159,7 +211,6 @@ async function uploadSingleFile(file, originalName, contentType, uid, uploaderNa
   });
 
   const thumbnailUpload = (async () => {
-    if (!contentType.startsWith('image/')) return null;
     try {
       const thumbBlob = await createDisplayThumbnail(file);
       if (!thumbBlob) return null;
