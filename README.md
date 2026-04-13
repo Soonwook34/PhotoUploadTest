@@ -21,7 +21,7 @@
 
 | 항목 | 기술 |
 |------|------|
-| Frontend | Vanilla HTML / CSS / JS (ES Modules) |
+| Frontend | Vanilla HTML / CSS / JS (ES Modules) — Tiffany Blue 테마 |
 | Gallery | [Masonry.js](https://masonry.desandro.com/) + [imagesLoaded](https://imagesloaded.desandro.com/) (CDN) |
 | EXIF | [exifr](https://github.com/MikeKovarik/exifr) (CDN, 촬영 시간 추출) |
 | Font | [Google Fonts - Orbit](https://fonts.google.com/specimen/Orbit) |
@@ -97,7 +97,7 @@ const firebaseConfig = {
 
 ### 갤러리 페이지
 - 전체 / 사진 / 영상 필터 (클라이언트 사이드, 깜빡임 없음)
-- Masonry 레이아웃 (원본 비율 유지) + 스켈레톤 로딩 + 이미지 페이드인
+- Masonry 레이아웃 + shimmer 로딩 + 이미지 페이드인
 - 전체화면 라이트박스 (터치 스와이프 지원, EXIF 촬영 시간 표시)
 - "더 보기" 페이지네이션 (최초 20개, 이후 15개씩)
 
