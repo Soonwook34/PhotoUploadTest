@@ -64,7 +64,7 @@ export function validateFiles(files, uid) {
   return { valid, errors };
 }
 
-const THUMB_MAX_SIZE = 1200;
+const THUMB_MAX_SIZE = 1440;
 const THUMB_QUALITY = 0.7;
 
 /**
@@ -111,6 +111,10 @@ async function createImageThumbnail(file) {
 }
 
 function createVideoThumbnail(file) {
+  // iOS WebKit은 canvas.drawImage(video)를 지원하지 않음 (WebKit bug #153588)
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
+  if (isIOS) return Promise.resolve(null);
+
   return new Promise((resolve) => {
     const video = document.createElement('video');
     video.preload = 'auto';

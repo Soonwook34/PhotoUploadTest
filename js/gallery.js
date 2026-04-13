@@ -71,9 +71,9 @@ export function renderGalleryItem(item, index) {
         ${uploaderTag}
       `;
     } else {
-      // 썸네일 없으면 video 태그로 첫 프레임 시도
+      // 썸네일 없으면 #t=0.001 트릭으로 iOS 포함 모든 기기에서 첫 프레임 표시
       div.innerHTML = `
-        <video src="${item.url}" preload="metadata" playsinline muted></video>
+        <video src="${item.url}#t=0.001" preload="metadata" playsinline muted></video>
         <div class="video-overlay"><div class="play-icon"></div></div>
         ${uploaderTag}
       `;
@@ -202,7 +202,7 @@ export class Lightbox {
     if (item.contentType && item.contentType.startsWith('video/')) {
       this.contentEl.innerHTML = `<video src="${item.url}" controls playsinline autoplay></video>`;
     } else {
-      this.contentEl.innerHTML = `<img src="${item.url}" alt="">`;
+      this.contentEl.innerHTML = `<img src="${item.thumbnailUrl || item.url}" alt="">`;
     }
 
     const name = item.uploaderName && item.uploaderName !== 'anonymous'

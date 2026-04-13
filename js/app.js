@@ -379,11 +379,9 @@ function resetUploadScreen() {
 
 // 서버에서 데이터 로드 (필터 없이 전체 로드, 클라이언트에서 필터링)
 async function loadGallery(reset = false) {
-  if (isLoadingGallery) {
-    galleryLoading.hidden = true;
-    return;
-  }
+  if (isLoadingGallery) return;
   isLoadingGallery = true;
+  btnLoadMore.disabled = true;
 
   if (reset) {
     galleryItems = [];
@@ -392,18 +390,21 @@ async function loadGallery(reset = false) {
     galleryHasMore = false;
   }
 
+  let newItems = [];
   try {
     const pageSize = reset ? INITIAL_PAGE_SIZE : MORE_PAGE_SIZE;
-    const { lastDoc, items, hasMore } = await loadPhotos(
-      galleryLastDoc,
-      pageSize
-    );
+    const { lastDoc, items, hasMore } = await Promise.race([
+      loadPhotos(galleryLastDoc, pageSize),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Gallery load timed out')), 10_000)
+      )
+    ]);
 
     galleryLastDoc = lastDoc;
     galleryHasMore = hasMore;
 
     // 중복 제거
-    const newItems = items.filter(item => !galleryLoadedIds.has(item.id));
+    newItems = items.filter(item => !galleryLoadedIds.has(item.id));
     newItems.forEach(item => galleryLoadedIds.add(item.id));
     galleryItems = [...galleryItems, ...newItems];
   } catch (error) {
@@ -411,8 +412,13 @@ async function loadGallery(reset = false) {
     showToast('사진을 불러올 수 없습니다. 다시 시도해 주세요.', 'error');
   } finally {
     isLoadingGallery = false;
+    btnLoadMore.disabled = false;
     galleryLoading.hidden = true;
-    applyGalleryFilter();
+    if (reset) {
+      applyGalleryFilter();
+    } else {
+      appendNewGalleryItems(newItems);
+    }
   }
 }
 
@@ -442,6 +448,37 @@ function applyGalleryFilter() {
     el.addEventListener('click', () => {
       const idx = filtered.findIndex(gi => gi.id === item.id);
       lightbox.open(filtered, idx >= 0 ? idx : 0);
+    });
+    galleryGrid.appendChild(el);
+  });
+
+  btnLoadMore.hidden = !galleryHasMore;
+}
+
+// 더보기: 새 항목만 현재 그리드에 추가 (전체 재렌더링 없음)
+function appendNewGalleryItems(items) {
+  if (items.length === 0) {
+    btnLoadMore.hidden = !galleryHasMore;
+    return;
+  }
+
+  const startIndex = galleryGrid.children.length;
+  const filtered = items.filter(item => {
+    if (galleryFilter === 'image') return item.contentType?.startsWith('image/');
+    if (galleryFilter === 'video') return item.contentType?.startsWith('video/');
+    return true;
+  });
+
+  filtered.forEach((item, i) => {
+    const el = renderGalleryItem(item, startIndex + i);
+    el.addEventListener('click', () => {
+      const allFiltered = galleryItems.filter(it => {
+        if (galleryFilter === 'image') return it.contentType?.startsWith('image/');
+        if (galleryFilter === 'video') return it.contentType?.startsWith('video/');
+        return true;
+      });
+      const idx = allFiltered.findIndex(gi => gi.id === item.id);
+      lightbox.open(allFiltered, idx >= 0 ? idx : 0);
     });
     galleryGrid.appendChild(el);
   });
