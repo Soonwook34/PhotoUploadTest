@@ -63,10 +63,15 @@ function showScreen(name) {
   currentScreen = name;
 
   if (name === 'gallery') {
-    galleryLoading.hidden = false;
-    galleryEmpty.hidden = true;
-    btnLoadMore.hidden = true;
-    loadGallery(true);
+    if (galleryItems.length > 0) {
+      // 캐시된 데이터로 즉시 렌더링 (Firestore 호출 없음)
+      applyGalleryFilter();
+    } else {
+      galleryLoading.hidden = false;
+      galleryEmpty.hidden = true;
+      btnLoadMore.hidden = true;
+      loadGallery(true);
+    }
   }
 }
 
@@ -75,15 +80,21 @@ async function init() {
   try {
     currentUser = await ensureAuth();
 
-    // 배경 갤러리 + 사진 수를 병렬 로드
-    const [{ items }, count] = await Promise.all([
-      loadPhotos('all', null, 12),
+    // 배경 갤러리 + 사진 수를 병렬 로드 (20개 로드하여 갤러리 캐시로도 재사용)
+    const [photosResult, count] = await Promise.all([
+      loadPhotos('all', null, INITIAL_PAGE_SIZE),
       getPhotoCount()
     ]);
-    renderBackgroundGallery(items, bgGallery);
+    renderBackgroundGallery(photosResult.items, bgGallery);
     if (count > 0) {
       photoCount.textContent = `지금까지 ${count}장의 사진이 공유되었습니다`;
     }
+
+    // 갤러리 캐시에 저장 (갤러리 첫 진입 시 Firestore 호출 불필요)
+    galleryItems = photosResult.items;
+    photosResult.items.forEach(item => galleryLoadedIds.add(item.id));
+    galleryLastDoc = photosResult.lastDoc;
+    galleryHasMore = photosResult.hasMore;
 
     // 로딩 화면 제거
     loadingScreen.classList.remove('active');
@@ -328,6 +339,12 @@ async function startUpload() {
     },
     onAllComplete: (successCount, failCount) => {
       isUploading = false;
+
+      // 갤러리 캐시 무효화 (다음 진입 시 새로 로드)
+      galleryItems = [];
+      galleryLoadedIds = new Set();
+      galleryLastDoc = null;
+      galleryHasMore = false;
 
       // 완료 화면 표시
       uploadProgress.hidden = true;
