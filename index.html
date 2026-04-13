@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#FDF8F4">
+  <title>순욱 & 소희 결혼식</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbit&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Loading Screen -->
+  <div id="loading-screen" class="loading-screen active">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">잠시만 기다려 주세요</p>
+    </div>
+  </div>
+
+  <!-- Offline Banner -->
+  <div id="offline-banner" class="offline-banner">
+    인터넷 연결을 확인해 주세요
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Screen: Landing -->
+  <section id="screen-landing" class="screen">
+    <div id="bg-gallery" class="bg-gallery"></div>
+    <div class="bg-overlay"></div>
+    <div class="landing-content">
+      <div class="landing-header">
+        <p class="wedding-date">2026. 09. 20. 일요일</p>
+        <h1 class="couple-names">순욱 <span class="heart">&</span> 소희</h1>
+      </div>
+      <div class="landing-message">
+        <p>오늘 함께해 주셔서 고맙습니다.<br>여러분이 담은 순간들을 여기에 남겨주세요.</p>
+      </div>
+      <div class="landing-actions">
+        <button id="btn-upload" class="btn btn-primary">사진 올리기</button>
+        <button id="btn-gallery" class="btn btn-secondary">갤러리 보기</button>
+      </div>
+      <p id="photo-count" class="photo-count"></p>
+    </div>
+  </section>
+
+  <!-- Screen: Upload -->
+  <section id="screen-upload" class="screen">
+    <div class="screen-inner">
+      <button id="btn-back-upload" class="btn-back">&larr; 돌아가기</button>
+
+      <h2 class="screen-title">소중한 순간을 공유해 주세요</h2>
+
+      <div class="uploader-name-wrap">
+        <input type="text" id="uploader-name" class="input-name" placeholder="이름 (선택)" maxlength="20">
+      </div>
+
+      <!-- Drop Zone -->
+      <div id="drop-zone" class="drop-zone">
+        <div class="drop-zone-content">
+          <svg class="drop-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 32V16M24 16L18 22M24 16L30 22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 32V36C8 38.2091 9.79086 40 12 40H36C38.2091 40 40 38.2091 40 36V32" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <p class="drop-text">탭하여 사진 또는 영상을 선택하세요</p>
+          <p class="drop-subtext">최대 50개까지 업로드할 수 있습니다</p>
+        </div>
+        <input type="file" id="file-input" accept="image/*,video/*" multiple hidden>
+      </div>
+
+      <!-- File Preview -->
+      <div id="file-preview" class="file-preview" hidden>
+        <div class="file-preview-header">
+          <span id="file-count" class="file-count">0/50 선택됨</span>
+          <button id="btn-clear-files" class="btn-text">전체 삭제</button>
+        </div>
+        <div id="preview-grid" class="preview-grid"></div>
+        <button id="btn-start-upload" class="btn btn-primary btn-upload-start">업로드</button>
+      </div>
+
+      <!-- Upload Progress -->
+      <div id="upload-progress" class="upload-progress" hidden>
+        <div class="progress-header">
+          <span id="progress-text" class="progress-text">업로드 중...</span>
+          <span id="progress-count" class="progress-count">0/0</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <div id="progress-files" class="progress-files"></div>
+      </div>
+
+      <!-- Upload Complete -->
+      <div id="upload-complete" class="upload-complete" hidden>
+        <div class="complete-animation">
+          <svg class="checkmark" viewBox="0 0 52 52">
+            <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+          </svg>
+        </div>
+        <p class="complete-title">감사합니다!</p>
+        <p id="complete-message" class="complete-message"></p>
+        <div class="complete-actions">
+          <button id="btn-upload-more" class="btn btn-secondary">더 올리기</button>
+          <button id="btn-go-gallery" class="btn btn-primary">갤러리 보기</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screen: Gallery -->
+  <section id="screen-gallery" class="screen">
+    <div class="screen-inner">
+      <button id="btn-back-gallery" class="btn-back">&larr; 돌아가기</button>
+
+      <h2 class="screen-title">우리의 추억</h2>
+
+      <div class="gallery-filters">
+        <button class="filter-btn active" data-filter="all">전체</button>
+        <button class="filter-btn" data-filter="image">사진</button>
+        <button class="filter-btn" data-filter="video">영상</button>
+      </div>
+
+      <div id="gallery-grid" class="gallery-grid"></div>
+
+      <div id="gallery-empty" class="gallery-empty" hidden>
+        <svg class="empty-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="10" width="36" height="28" rx="4" stroke="currentColor" stroke-width="2"/>
+          <circle cx="18" cy="22" r="4" stroke="currentColor" stroke-width="2"/>
+          <path d="M6 34L16 26L22 32L32 22L42 32" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <p>아직 공유된 사진이 없습니다</p>
+      </div>
+
+      <div id="gallery-loading" class="gallery-loading" hidden>
+        <div class="loading-spinner small"></div>
+      </div>
+
+      <button id="btn-load-more" class="btn btn-secondary btn-load-more" hidden>더 보기</button>
+    </div>
+  </section>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" hidden>
+    <button id="lightbox-close" class="lightbox-close">&times;</button>
+    <button id="lightbox-prev" class="lightbox-nav lightbox-prev-btn">&lsaquo;</button>
+    <button id="lightbox-next" class="lightbox-nav lightbox-next-btn">&rsaquo;</button>
+    <div id="lightbox-content" class="lightbox-content"></div>
+    <div id="lightbox-info" class="lightbox-info"></div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

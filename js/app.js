@@ -1,0 +1,413 @@
+import { ensureAuth } from './firebase-config.js';
+import { validateFiles, generateThumbnail, uploadAll, getUploadedCount } from './upload.js';
+import { loadPhotos, getPhotoCount, renderGalleryItem, renderBackgroundGallery, Lightbox } from './gallery.js';
+
+// === State ===
+let currentUser = null;
+let currentScreen = 'landing';
+let selectedFiles = [];
+let galleryItems = [];
+let galleryLastDoc = null;
+let galleryHasMore = false;
+let galleryFilter = 'all';
+let isUploading = false;
+
+// === DOM References ===
+const loadingScreen = document.getElementById('loading-screen');
+const offlineBanner = document.getElementById('offline-banner');
+const screens = {
+  landing: document.getElementById('screen-landing'),
+  upload: document.getElementById('screen-upload'),
+  gallery: document.getElementById('screen-gallery')
+};
+
+// Landing
+const bgGallery = document.getElementById('bg-gallery');
+const photoCount = document.getElementById('photo-count');
+
+// Upload
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const uploaderNameInput = document.getElementById('uploader-name');
+const filePreview = document.getElementById('file-preview');
+const fileCountEl = document.getElementById('file-count');
+const previewGrid = document.getElementById('preview-grid');
+const btnStartUpload = document.getElementById('btn-start-upload');
+const uploadProgress = document.getElementById('upload-progress');
+const progressText = document.getElementById('progress-text');
+const progressCount = document.getElementById('progress-count');
+const progressBar = document.getElementById('progress-bar');
+const progressFiles = document.getElementById('progress-files');
+const uploadComplete = document.getElementById('upload-complete');
+const completeMessage = document.getElementById('complete-message');
+
+// Gallery
+const galleryGrid = document.getElementById('gallery-grid');
+const galleryEmpty = document.getElementById('gallery-empty');
+const galleryLoading = document.getElementById('gallery-loading');
+const btnLoadMore = document.getElementById('btn-load-more');
+
+// Lightbox
+const lightbox = new Lightbox();
+
+// === Screen Management ===
+function showScreen(name) {
+  if (currentScreen === name) return;
+
+  Object.entries(screens).forEach(([key, el]) => {
+    el.classList.toggle('active', key === name);
+  });
+
+  currentScreen = name;
+
+  if (name === 'gallery') {
+    loadGallery(true);
+  }
+}
+
+// === Initialize ===
+async function init() {
+  try {
+    currentUser = await ensureAuth();
+
+    // 배경 갤러리 로드
+    const { items } = await loadPhotos('all', null, 12);
+    renderBackgroundGallery(items, bgGallery);
+
+    // 사진 수 표시
+    const count = await getPhotoCount();
+    if (count > 0) {
+      photoCount.textContent = `지금까지 ${count}장의 사진이 공유되었습니다`;
+    }
+
+    // 로딩 화면 제거
+    loadingScreen.classList.remove('active');
+    screens.landing.classList.add('active');
+    currentScreen = 'landing';
+  } catch (error) {
+    console.error('Initialization failed:', error);
+    loadingScreen.querySelector('.loading-text').textContent =
+      '초기화에 실패했습니다. 페이지를 새로고침해 주세요.';
+  }
+}
+
+// === Event Listeners ===
+
+// Navigation
+document.getElementById('btn-upload').addEventListener('click', () => {
+  resetUploadScreen();
+  showScreen('upload');
+});
+
+document.getElementById('btn-gallery').addEventListener('click', () => {
+  showScreen('gallery');
+});
+
+document.getElementById('btn-back-upload').addEventListener('click', () => {
+  if (isUploading) return;
+  showScreen('landing');
+});
+
+document.getElementById('btn-back-gallery').addEventListener('click', () => {
+  showScreen('landing');
+});
+
+document.getElementById('btn-upload-more').addEventListener('click', () => {
+  resetUploadScreen();
+});
+
+document.getElementById('btn-go-gallery').addEventListener('click', () => {
+  showScreen('gallery');
+});
+
+// Drop Zone
+dropZone.addEventListener('click', () => {
+  fileInput.click();
+});
+
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('dragover');
+});
+
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+
+fileInput.addEventListener('change', () => {
+  handleFiles(fileInput.files);
+  fileInput.value = '';
+});
+
+// Clear files
+document.getElementById('btn-clear-files').addEventListener('click', () => {
+  selectedFiles = [];
+  renderPreviews();
+});
+
+// Start upload
+btnStartUpload.addEventListener('click', startUpload);
+
+// Gallery filters
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.classList.contains('active')) return;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    galleryFilter = btn.dataset.filter;
+    loadGallery(true);
+  });
+});
+
+// Load more
+btnLoadMore.addEventListener('click', () => {
+  loadGallery(false);
+});
+
+// Offline detection
+window.addEventListener('online', () => {
+  offlineBanner.classList.remove('visible');
+});
+
+window.addEventListener('offline', () => {
+  offlineBanner.classList.add('visible');
+});
+
+// === File Handling ===
+async function handleFiles(fileList) {
+  if (!currentUser) return;
+
+  const { valid, errors } = validateFiles(fileList, currentUser.uid);
+
+  // 에러 토스트 표시
+  errors.forEach(err => showToast(err, 'error'));
+
+  if (valid.length === 0) return;
+
+  // 기존 선택에 추가 (50개 제한)
+  const remaining = 50 - getUploadedCount(currentUser.uid) - selectedFiles.length;
+  const toAdd = valid.slice(0, Math.max(0, remaining));
+
+  if (toAdd.length < valid.length) {
+    showToast(`최대 업로드 수를 초과하여 ${toAdd.length}개만 추가됩니다.`, 'error');
+  }
+
+  selectedFiles = [...selectedFiles, ...toAdd];
+  renderPreviews();
+}
+
+async function renderPreviews() {
+  if (selectedFiles.length === 0) {
+    filePreview.hidden = true;
+    dropZone.style.display = '';
+    return;
+  }
+
+  dropZone.style.display = 'none';
+  filePreview.hidden = false;
+
+  const remaining = 50 - getUploadedCount(currentUser.uid);
+  fileCountEl.textContent = `${selectedFiles.length}/${remaining} 선택됨`;
+
+  previewGrid.innerHTML = '';
+
+  for (let i = 0; i < selectedFiles.length; i++) {
+    const file = selectedFiles[i];
+    const div = document.createElement('div');
+    div.className = 'preview-item';
+
+    // 썸네일 생성
+    const thumbUrl = await generateThumbnail(file);
+
+    if (file.type.startsWith('video/')) {
+      div.innerHTML = `
+        <img src="${thumbUrl || ''}" alt="">
+        <span class="video-badge">영상</span>
+        <button class="preview-remove" data-index="${i}">&times;</button>
+      `;
+    } else {
+      div.innerHTML = `
+        <img src="${thumbUrl || ''}" alt="">
+        <button class="preview-remove" data-index="${i}">&times;</button>
+      `;
+    }
+
+    previewGrid.appendChild(div);
+  }
+
+  // 삭제 버튼 이벤트
+  previewGrid.querySelectorAll('.preview-remove').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const index = parseInt(btn.dataset.index, 10);
+      selectedFiles.splice(index, 1);
+      renderPreviews();
+    });
+  });
+
+  btnStartUpload.disabled = selectedFiles.length === 0;
+}
+
+// === Upload ===
+async function startUpload() {
+  if (!currentUser || selectedFiles.length === 0 || isUploading) return;
+
+  isUploading = true;
+  const uploaderName = uploaderNameInput.value.trim();
+  const files = [...selectedFiles];
+
+  // UI 전환
+  filePreview.hidden = true;
+  uploadProgress.hidden = false;
+  uploadComplete.hidden = true;
+
+  progressText.textContent = '업로드 준비 중...';
+  progressCount.textContent = `0/${files.length}`;
+  progressBar.style.width = '0%';
+
+  // 파일별 상태 UI 생성
+  progressFiles.innerHTML = '';
+  files.forEach((file, i) => {
+    const item = document.createElement('div');
+    item.className = 'progress-file-item';
+    item.id = `progress-file-${i}`;
+    item.innerHTML = `
+      <span class="file-status">⏳</span>
+      <span class="file-name">${escapeHtml(file.name)}</span>
+    `;
+    progressFiles.appendChild(item);
+  });
+
+  let completedCount = 0;
+
+  await uploadAll(files, currentUser.uid, uploaderName, {
+    onFileProgress: (index, progress) => {
+      // 개별 파일 진행률은 UI에 반영하지 않음 (전체 프로그레스 바로 충분)
+    },
+    onFileComplete: (index, success) => {
+      completedCount++;
+      const item = document.getElementById(`progress-file-${index}`);
+      if (item) {
+        item.querySelector('.file-status').textContent = success ? '✓' : '✗';
+        item.classList.add(success ? 'done' : 'error');
+      }
+      progressCount.textContent = `${completedCount}/${files.length}`;
+      progressText.textContent = `업로드 중... (${completedCount}/${files.length})`;
+    },
+    onOverallProgress: (progress) => {
+      progressBar.style.width = `${Math.round(progress * 100)}%`;
+    },
+    onAllComplete: (successCount, failCount) => {
+      isUploading = false;
+
+      // 완료 화면 표시
+      uploadProgress.hidden = true;
+      uploadComplete.hidden = false;
+
+      if (failCount === 0) {
+        completeMessage.textContent = `${successCount}장의 사진이 업로드되었습니다.`;
+      } else {
+        completeMessage.textContent =
+          `${successCount}장 업로드 완료, ${failCount}장 실패`;
+      }
+
+      selectedFiles = [];
+    }
+  });
+}
+
+function resetUploadScreen() {
+  selectedFiles = [];
+  isUploading = false;
+
+  dropZone.style.display = '';
+  filePreview.hidden = true;
+  uploadProgress.hidden = true;
+  uploadComplete.hidden = true;
+  previewGrid.innerHTML = '';
+  progressFiles.innerHTML = '';
+  progressBar.style.width = '0%';
+  btnStartUpload.disabled = false;
+
+  // 업로드 화면이 아직 아닌 경우 전환
+  if (currentScreen !== 'upload') {
+    showScreen('upload');
+  }
+}
+
+// === Gallery ===
+async function loadGallery(reset = false) {
+  if (reset) {
+    galleryGrid.innerHTML = '';
+    galleryItems = [];
+    galleryLastDoc = null;
+    galleryHasMore = false;
+  }
+
+  galleryLoading.hidden = false;
+  galleryEmpty.hidden = true;
+  btnLoadMore.hidden = true;
+
+  try {
+    const { docs, items, hasMore } = await loadPhotos(
+      galleryFilter,
+      galleryLastDoc
+    );
+
+    galleryItems = [...galleryItems, ...items];
+    galleryLastDoc = docs[docs.length - 1] || null;
+    galleryHasMore = hasMore;
+
+    // DOM에 추가
+    const startIndex = galleryGrid.children.length;
+    items.forEach((item, i) => {
+      const el = renderGalleryItem(item, startIndex + i);
+      el.addEventListener('click', () => {
+        const idx = galleryItems.findIndex(gi => gi.id === item.id);
+        lightbox.open(galleryItems, idx >= 0 ? idx : 0);
+      });
+      galleryGrid.appendChild(el);
+    });
+
+    // 빈 상태
+    if (galleryItems.length === 0) {
+      galleryEmpty.hidden = false;
+    }
+
+    btnLoadMore.hidden = !galleryHasMore;
+  } catch (error) {
+    console.error('Gallery load failed:', error);
+    showToast('사진을 불러올 수 없습니다. 다시 시도해 주세요.', 'error');
+  } finally {
+    galleryLoading.hidden = true;
+  }
+}
+
+// === Toast ===
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
+
+// === Utility ===
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// === Start ===
+init();
