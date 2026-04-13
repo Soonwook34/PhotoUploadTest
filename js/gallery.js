@@ -52,7 +52,7 @@ export async function getPhotoCount() {
 
 /**
  * 갤러리 아이템 DOM 요소를 생성합니다.
- * 스켈레톤 → 이미지 로드 후 페이드인 방식.
+ * <img>를 DOM에 직접 삽입하여 imagesLoaded가 추적 가능하게 함.
  */
 export function renderGalleryItem(item) {
   const div = document.createElement('div');
@@ -63,33 +63,20 @@ export function renderGalleryItem(item) {
   const uploaderTag = item.uploaderName && item.uploaderName !== 'anonymous'
     ? `<span class="uploader-tag">${escapeHtml(item.uploaderName)}</span>` : '';
 
-  if (item.contentType && item.contentType.startsWith('video/')) {
+  if (item.contentType?.startsWith('video/')) {
     if (item.thumbnailUrl) {
-      div.innerHTML = `<div class="skeleton gallery-skeleton"></div>
+      div.innerHTML = `<img src="${item.thumbnailUrl}" alt="">
         <div class="video-overlay"><div class="play-icon"></div></div>${uploaderTag}`;
-      const img = new Image();
-      img.onload = () => {
-        const sk = div.querySelector('.skeleton');
-        if (sk) { img.alt = ''; sk.replaceWith(img); }
-        div.classList.add('loaded');
-      };
-      img.src = item.thumbnailUrl;
+      div.querySelector('img').onload = () => div.classList.add('loaded');
     } else {
       div.innerHTML = `<video src="${item.url}#t=0.001" preload="metadata" playsinline muted></video>
         <div class="video-overlay"><div class="play-icon"></div></div>${uploaderTag}`;
-      const video = div.querySelector('video');
-      video.onloadeddata = () => div.classList.add('loaded');
+      div.querySelector('video').onloadeddata = () => div.classList.add('loaded');
     }
   } else {
     const src = item.thumbnailUrl || item.url;
-    div.innerHTML = `<div class="skeleton gallery-skeleton"></div>${uploaderTag}`;
-    const img = new Image();
-    img.onload = () => {
-      const sk = div.querySelector('.skeleton');
-      if (sk) { img.alt = ''; sk.replaceWith(img); }
-      div.classList.add('loaded');
-    };
-    img.src = src;
+    div.innerHTML = `<img src="${src}" alt="">${uploaderTag}`;
+    div.querySelector('img').onload = () => div.classList.add('loaded');
   }
 
   return div;
@@ -216,7 +203,9 @@ export class Lightbox {
       ? item.uploaderName : '';
     const date = item.takenAt?.toDate
       ? formatDate(item.takenAt.toDate())
-      : '';
+      : item.createdAt?.toDate
+        ? formatDate(item.createdAt.toDate())
+        : '';
 
     this.infoEl.textContent = [name, date].filter(Boolean).join(' · ');
 

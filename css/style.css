@@ -7,7 +7,6 @@
   --color-text: #2D3F3D;
   --color-text-light: #5E7572;
   --color-accent: #C4EDE9;
-  --color-overlay: rgba(242, 252, 251, 0.85);
   --color-success: #6BBF8A;
   --color-error: #DA8189;
   --color-white: #FFFFFF;
@@ -675,10 +674,6 @@ body {
   color: var(--color-white);
 }
 
-.gallery-grid {
-  /* Masonry가 포지셔닝 처리 */
-}
-
 .gallery-item {
   position: relative;
   width: calc((100% - 8px) / 3);
@@ -686,7 +681,16 @@ body {
   border-radius: var(--radius-sm);
   overflow: hidden;
   cursor: pointer;
+  min-height: 120px;
+  background: linear-gradient(90deg, var(--color-accent) 25%, #d4f0ed 50%, var(--color-accent) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.gallery-item.loaded {
+  min-height: 0;
   background: var(--color-accent);
+  animation: none;
 }
 
 @media (min-width: 768px) {
@@ -706,12 +710,6 @@ body {
 .gallery-item.loaded img,
 .gallery-item.loaded video {
   opacity: 1;
-}
-
-.gallery-skeleton {
-  width: 100%;
-  min-height: 150px;
-  aspect-ratio: 3/4;
 }
 
 .gallery-item .video-overlay {
@@ -755,8 +753,6 @@ body {
   border-radius: 4px;
 }
 
-/* fadeInUp는 더 이상 갤러리에서 사용하지 않음 (이미지 로드 시 opacity 트랜지션 사용) */
-
 .gallery-empty {
   text-align: center;
   padding: 60px 20px;
@@ -777,6 +773,10 @@ body {
 }
 
 .gallery-loading[hidden] {
+  display: none;
+}
+
+#btn-retry-init[hidden] {
   display: none;
 }
 

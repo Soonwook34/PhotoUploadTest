@@ -75,8 +75,6 @@ function showScreen(name) {
 
   if (name === 'gallery') {
     if (galleryItems.length > 0) {
-      // 캐시된 데이터로 즉시 렌더링 (Firestore 호출 없음)
-      // DOM이 이미 있으면 필터만 적용, 없으면 전체 렌더
       if (galleryGrid.children.length > 0) {
         applyGalleryFilter();
       } else {
@@ -86,10 +84,7 @@ function showScreen(name) {
       showGalleryLoading();
       galleryEmpty.hidden = true;
       btnLoadMore.hidden = true;
-      if (!isLoadingGallery) {
-        loadGallery(true);
-      }
-      // isLoadingGallery가 true면: 진행 중인 로딩의 finally가 스피너를 숨길 것
+      if (!isLoadingGallery) loadGallery(true);
     }
   }
 }
@@ -224,7 +219,6 @@ document.getElementById('btn-clear-files').addEventListener('click', () => {
 // Start upload
 btnStartUpload.addEventListener('click', startUpload);
 
-// Gallery filters - 클라이언트 사이드 필터링 (서버 재로드 없음)
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     if (btn.classList.contains('active')) return;
@@ -411,9 +405,7 @@ async function startUpload() {
   let completedCount = 0;
 
   await uploadAll(files, currentUser.uid, uploaderName, {
-    onFileProgress: (index, progress) => {
-      // 개별 파일 진행률은 UI에 반영하지 않음 (전체 프로그레스 바로 충분)
-    },
+    onFileProgress: () => {},
     onFileComplete: (index, success) => {
       completedCount++;
       const item = document.getElementById(`progress-file-${index}`);
@@ -480,7 +472,6 @@ function resetUploadScreen() {
 
 // === Gallery ===
 
-// 갤러리 로딩 스피너 안전 관리 (15초 safety timeout)
 let galleryLoadingTimer = null;
 
 function showGalleryLoading() {
@@ -499,7 +490,6 @@ function hideGalleryLoading() {
   clearTimeout(galleryLoadingTimer);
 }
 
-// 서버에서 데이터 로드 (필터 없이 전체 로드, 클라이언트에서 필터링)
 async function loadGallery(reset = false) {
   if (isLoadingGallery) return;
   isLoadingGallery = true;
@@ -541,7 +531,6 @@ async function loadGallery(reset = false) {
   }
 }
 
-// Masonry 초기화/재초기화
 function initMasonry() {
   if (masonryInstance) masonryInstance.destroy();
   masonryInstance = new Masonry(galleryGrid, {
@@ -555,7 +544,6 @@ function initMasonry() {
   });
 }
 
-// 전체 갤러리 아이템 렌더링 (초기 진입/캐시 렌더용)
 function renderGalleryItems(items) {
   if (masonryInstance) {
     masonryInstance.destroy();
@@ -571,11 +559,9 @@ function renderGalleryItems(items) {
   initMasonry();
 }
 
-// 클라이언트 사이드 필터링 (DOM 재생성 없이 visibility 토글)
 function applyGalleryFilter() {
   const items = galleryGrid.querySelectorAll('.gallery-item');
 
-  // DOM에 아이템이 없으면 전체 렌더링
   if (items.length === 0 && galleryItems.length > 0) {
     renderGalleryItems(galleryItems);
     return;
@@ -595,7 +581,6 @@ function applyGalleryFilter() {
   hideGalleryLoading();
   btnLoadMore.hidden = !galleryHasMore;
 
-  // Masonry relayout (hidden 아이템 건너뜀)
   if (masonryInstance) masonryInstance.layout();
 }
 
@@ -614,15 +599,15 @@ function appendNewGalleryItems(items) {
     newElements.push(el);
   });
 
-  applyGalleryFilter();
-
-  // Masonry에 새 요소 추가
+  // Masonry에 먼저 등록 → 필터 적용 → 이미지 로드 시 relayout
   if (masonryInstance) {
     masonryInstance.appended(newElements);
     imagesLoaded(newElements).on('progress', () => {
       if (masonryInstance) masonryInstance.layout();
     });
   }
+
+  applyGalleryFilter();
 }
 
 // 라이트박스 열기 (현재 필터 기준 visible 아이템 목록 사용)
