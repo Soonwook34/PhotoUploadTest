@@ -63,6 +63,9 @@ function showScreen(name) {
   currentScreen = name;
 
   if (name === 'gallery') {
+    galleryLoading.hidden = false;
+    galleryEmpty.hidden = true;
+    btnLoadMore.hidden = true;
     loadGallery(true);
   }
 }
@@ -156,14 +159,14 @@ document.getElementById('btn-clear-files').addEventListener('click', () => {
 // Start upload
 btnStartUpload.addEventListener('click', startUpload);
 
-// Gallery filters
+// Gallery filters - 클라이언트 사이드 필터링 (서버 재로드 없음)
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     if (btn.classList.contains('active')) return;
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     galleryFilter = btn.dataset.filter;
-    loadGallery(true);
+    applyGalleryFilter();
   });
 });
 
@@ -205,9 +208,7 @@ async function handleFiles(fileList) {
 }
 
 function revokePreviewUrls() {
-  previewGrid.querySelectorAll('video[src^="blob:"]').forEach(v => {
-    URL.revokeObjectURL(v.src);
-  });
+  // blob URL이 더 이상 생성되지 않으므로 no-op
 }
 
 function renderPreviews() {
@@ -261,12 +262,10 @@ function renderPreviews() {
     if (!skeleton) return;
 
     if (thumb.type === 'video') {
-      const video = document.createElement('video');
-      video.src = thumb.url;
-      video.muted = true;
-      video.playsInline = true;
-      video.preload = 'metadata';
-      skeleton.replaceWith(video);
+      const placeholder = document.createElement('div');
+      placeholder.className = 'video-placeholder';
+      placeholder.innerHTML = '<div class="play-icon"></div>';
+      skeleton.replaceWith(placeholder);
     } else {
       const img = document.createElement('img');
       img.src = thumb.url;
@@ -367,56 +366,73 @@ function resetUploadScreen() {
 }
 
 // === Gallery ===
+
+// 서버에서 데이터 로드 (필터 없이 전체 로드, 클라이언트에서 필터링)
 async function loadGallery(reset = false) {
   if (isLoadingGallery) return;
   isLoadingGallery = true;
 
   if (reset) {
-    galleryGrid.innerHTML = '';
     galleryItems = [];
     galleryLoadedIds = new Set();
     galleryLastDoc = null;
     galleryHasMore = false;
   }
 
-  galleryLoading.hidden = false;
-  galleryEmpty.hidden = true;
-  btnLoadMore.hidden = true;
-
   try {
     const { lastDoc, items, hasMore } = await loadPhotos(
-      galleryFilter,
+      'all',
       galleryLastDoc
     );
 
     galleryLastDoc = lastDoc;
     galleryHasMore = hasMore;
 
-    // 중복 제거 후 DOM에 추가
+    // 중복 제거
     const newItems = items.filter(item => !galleryLoadedIds.has(item.id));
-    if (newItems.length > 0) {
-      newItems.forEach(item => galleryLoadedIds.add(item.id));
-      galleryItems = [...galleryItems, ...newItems];
-      const startIndex = galleryGrid.children.length;
-      newItems.forEach((item, i) => {
-        const el = renderGalleryItem(item, startIndex + i);
-        el.addEventListener('click', () => {
-          const idx = galleryItems.findIndex(gi => gi.id === item.id);
-          lightbox.open(galleryItems, idx >= 0 ? idx : 0);
-        });
-        galleryGrid.appendChild(el);
-      });
-    }
-
-    galleryEmpty.hidden = galleryItems.length > 0;
-    btnLoadMore.hidden = !galleryHasMore;
+    newItems.forEach(item => galleryLoadedIds.add(item.id));
+    galleryItems = [...galleryItems, ...newItems];
   } catch (error) {
     console.error('Gallery load failed:', error);
     showToast('사진을 불러올 수 없습니다. 다시 시도해 주세요.', 'error');
   } finally {
-    galleryLoading.hidden = true;
     isLoadingGallery = false;
   }
+
+  applyGalleryFilter();
+}
+
+// 클라이언트 사이드 필터링 + DOM 렌더링
+function applyGalleryFilter() {
+  galleryGrid.innerHTML = '';
+
+  let filtered = galleryItems;
+  if (galleryFilter === 'image') {
+    filtered = galleryItems.filter(item => item.contentType && item.contentType.startsWith('image/'));
+  } else if (galleryFilter === 'video') {
+    filtered = galleryItems.filter(item => item.contentType && item.contentType.startsWith('video/'));
+  }
+
+  if (filtered.length === 0) {
+    galleryEmpty.hidden = false;
+    galleryLoading.hidden = true;
+    btnLoadMore.hidden = true;
+    return;
+  }
+
+  galleryEmpty.hidden = true;
+  galleryLoading.hidden = true;
+
+  filtered.forEach((item, i) => {
+    const el = renderGalleryItem(item, i);
+    el.addEventListener('click', () => {
+      const idx = filtered.findIndex(gi => gi.id === item.id);
+      lightbox.open(filtered, idx >= 0 ? idx : 0);
+    });
+    galleryGrid.appendChild(el);
+  });
+
+  btnLoadMore.hidden = !galleryHasMore;
 }
 
 // === Toast ===

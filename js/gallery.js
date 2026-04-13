@@ -3,7 +3,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 import { db } from './firebase-config.js';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 15;
 const PHOTOS_COLLECTION = 'photos';
 
 /**

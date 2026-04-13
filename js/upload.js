@@ -110,8 +110,8 @@ export async function createDisplayThumbnail(file) {
  */
 export async function generateThumbnail(file) {
   if (file.type.startsWith('video/')) {
-    // 영상은 Object URL을 바로 반환 (video 태그에서 직접 재생)
-    return { type: 'video', url: URL.createObjectURL(file) };
+    // 영상은 플레이스홀더 (iPhone Safari에서 blob video 미리보기 불가)
+    return { type: 'video', url: '' };
   }
 
   return new Promise((resolve) => {
