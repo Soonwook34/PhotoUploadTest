@@ -135,8 +135,6 @@ export async function generateThumbnail(file) {
 async function uploadSingleFile(file, originalName, contentType, uid, uploaderName, onProgress) {
   const timestamp = Date.now();
   const safeName = originalName.replace(/[^a-zA-Z0-9._-]/g, '_');
-
-  // 원본 업로드
   const path = `uploads/${uid}/${timestamp}_${safeName}`;
   const storageRef = ref(storage, path);
   const metadata = {
@@ -147,7 +145,8 @@ async function uploadSingleFile(file, originalName, contentType, uid, uploaderNa
     }
   };
 
-  const url = await new Promise((resolve, reject) => {
+  // 원본 업로드 + 썸네일 생성/업로드를 병렬 실행
+  const originalUpload = new Promise((resolve, reject) => {
     const task = uploadBytesResumable(storageRef, file, metadata);
     task.on('state_changed',
       (snapshot) => onProgress(snapshot.bytesTransferred / snapshot.totalBytes),
@@ -159,29 +158,28 @@ async function uploadSingleFile(file, originalName, contentType, uid, uploaderNa
     );
   });
 
-  // 썸네일 업로드 (이미지만, 실패해도 원본 업로드는 유지)
-  let thumbnailUrl = null;
-  if (contentType.startsWith('image/')) {
+  const thumbnailUpload = (async () => {
+    if (!contentType.startsWith('image/')) return null;
     try {
       const thumbBlob = await createDisplayThumbnail(file);
-      if (thumbBlob) {
-        const thumbPath = `thumbnails/${uid}/${timestamp}_${safeName}.jpg`;
-        const thumbRef = ref(storage, thumbPath);
-        const thumbMeta = { contentType: 'image/jpeg' };
-        await uploadBytesResumable(thumbRef, thumbBlob, thumbMeta);
-        thumbnailUrl = await getDownloadURL(thumbRef);
-      }
-    } catch (e) {
-      console.warn('Thumbnail upload failed, using original:', e);
+      if (!thumbBlob) return null;
+      const thumbPath = `thumbnails/${uid}/${timestamp}_${safeName}.jpg`;
+      const thumbRef = ref(storage, thumbPath);
+      await uploadBytesResumable(thumbRef, thumbBlob, { contentType: 'image/jpeg' });
+      return await getDownloadURL(thumbRef);
+    } catch {
+      return null;
     }
-  }
+  })();
+
+  const [url, thumbnailUrl] = await Promise.all([originalUpload, thumbnailUpload]);
 
   // Firestore에 메타데이터 저장
   await addDoc(collection(db, 'photos'), {
     url,
     thumbnailUrl,
     fileName: originalName,
-    contentType: contentType,
+    contentType,
     size: file.size,
     uid,
     uploaderName: uploaderName || 'anonymous',

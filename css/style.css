@@ -1,17 +1,17 @@
 /* === CSS Variables === */
 :root {
-  --color-bg: #FDF8F4;
-  --color-primary: #C9A87C;
-  --color-primary-hover: #B8956A;
-  --color-secondary: #8B7355;
-  --color-text: #4A3F35;
-  --color-text-light: #7A6E63;
-  --color-accent: #E8D5C4;
-  --color-overlay: rgba(253, 248, 244, 0.85);
-  --color-success: #7BA687;
-  --color-error: #C97B7B;
+  --color-bg: #F2FCFB;
+  --color-primary: #81DAD1;
+  --color-primary-hover: #6BCAC0;
+  --color-secondary: #4AADA3;
+  --color-text: #2D3F3D;
+  --color-text-light: #5E7572;
+  --color-accent: #C4EDE9;
+  --color-overlay: rgba(242, 252, 251, 0.85);
+  --color-success: #6BBF8A;
+  --color-error: #DA8189;
   --color-white: #FFFFFF;
-  --color-border: #E0D5CA;
+  --color-border: #B3DDD9;
   --font-family: 'Orbit', sans-serif;
   --radius: 12px;
   --radius-sm: 8px;
@@ -191,10 +191,18 @@ body {
   inset: 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: minmax(120px, 1fr);
+  grid-template-rows: repeat(4, 1fr);
   gap: 4px;
   opacity: 0;
   transition: opacity 1.5s ease;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .bg-gallery {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+  }
 }
 
 .bg-gallery.loaded {
@@ -212,9 +220,9 @@ body {
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(253, 248, 244, 0.7) 0%,
-    rgba(253, 248, 244, 0.85) 40%,
-    rgba(253, 248, 244, 0.9) 100%
+    rgba(242, 252, 251, 0.7) 0%,
+    rgba(242, 252, 251, 0.85) 40%,
+    rgba(242, 252, 251, 0.9) 100%
   );
   z-index: 1;
 }

@@ -202,7 +202,15 @@ async function handleFiles(fileList) {
   renderPreviews();
 }
 
+function revokePreviewUrls() {
+  previewGrid.querySelectorAll('video[src^="blob:"]').forEach(v => {
+    URL.revokeObjectURL(v.src);
+  });
+}
+
 function renderPreviews() {
+  revokePreviewUrls();
+
   if (selectedFiles.length === 0) {
     filePreview.hidden = true;
     dropZone.style.display = '';
@@ -337,6 +345,7 @@ async function startUpload() {
 }
 
 function resetUploadScreen() {
+  revokePreviewUrls();
   selectedFiles = [];
   isUploading = false;
 
@@ -374,26 +383,25 @@ async function loadGallery(reset = false) {
       galleryLastDoc
     );
 
-    galleryItems = [...galleryItems, ...items];
     galleryLastDoc = docs[docs.length - 1] || null;
     galleryHasMore = hasMore;
 
     // DOM에 추가
-    const startIndex = galleryGrid.children.length;
-    items.forEach((item, i) => {
-      const el = renderGalleryItem(item, startIndex + i);
-      el.addEventListener('click', () => {
-        const idx = galleryItems.findIndex(gi => gi.id === item.id);
-        lightbox.open(galleryItems, idx >= 0 ? idx : 0);
+    if (items.length > 0) {
+      galleryItems = [...galleryItems, ...items];
+      const startIndex = galleryGrid.children.length;
+      items.forEach((item, i) => {
+        const el = renderGalleryItem(item, startIndex + i);
+        el.addEventListener('click', () => {
+          const idx = galleryItems.findIndex(gi => gi.id === item.id);
+          lightbox.open(galleryItems, idx >= 0 ? idx : 0);
+        });
+        galleryGrid.appendChild(el);
       });
-      galleryGrid.appendChild(el);
-    });
-
-    // 빈 상태
-    if (galleryItems.length === 0) {
-      galleryEmpty.hidden = false;
     }
 
+    // 빈 상태: 아이템이 하나도 없을 때
+    galleryEmpty.hidden = galleryItems.length > 0;
     btnLoadMore.hidden = !galleryHasMore;
   } catch (error) {
     console.error('Gallery load failed:', error);
