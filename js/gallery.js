@@ -52,37 +52,44 @@ export async function getPhotoCount() {
 
 /**
  * 갤러리 아이템 DOM 요소를 생성합니다.
+ * 스켈레톤 → 이미지 로드 후 페이드인 방식.
  */
-export function renderGalleryItem(item, index) {
+export function renderGalleryItem(item) {
   const div = document.createElement('div');
   div.className = 'gallery-item';
-  div.style.animationDelay = `${index * 50}ms`;
   div.dataset.id = item.id;
+  div.dataset.contentType = item.contentType || '';
 
   const uploaderTag = item.uploaderName && item.uploaderName !== 'anonymous'
     ? `<span class="uploader-tag">${escapeHtml(item.uploaderName)}</span>` : '';
 
   if (item.contentType && item.contentType.startsWith('video/')) {
     if (item.thumbnailUrl) {
-      // 썸네일이 있으면 이미지로 빠르게 표시 + 재생 오버레이
-      div.innerHTML = `
-        <img src="${item.thumbnailUrl}" alt="" loading="lazy">
-        <div class="video-overlay"><div class="play-icon"></div></div>
-        ${uploaderTag}
-      `;
+      div.innerHTML = `<div class="skeleton gallery-skeleton"></div>
+        <div class="video-overlay"><div class="play-icon"></div></div>${uploaderTag}`;
+      const img = new Image();
+      img.onload = () => {
+        const sk = div.querySelector('.skeleton');
+        if (sk) { img.alt = ''; sk.replaceWith(img); }
+        div.classList.add('loaded');
+      };
+      img.src = item.thumbnailUrl;
     } else {
-      // 썸네일 없으면 #t=0.001 트릭으로 iOS 포함 모든 기기에서 첫 프레임 표시
-      div.innerHTML = `
-        <video src="${item.url}#t=0.001" preload="metadata" playsinline muted></video>
-        <div class="video-overlay"><div class="play-icon"></div></div>
-        ${uploaderTag}
-      `;
+      div.innerHTML = `<video src="${item.url}#t=0.001" preload="metadata" playsinline muted></video>
+        <div class="video-overlay"><div class="play-icon"></div></div>${uploaderTag}`;
+      const video = div.querySelector('video');
+      video.onloadeddata = () => div.classList.add('loaded');
     }
   } else {
-    div.innerHTML = `
-      <img src="${item.thumbnailUrl || item.url}" alt="" loading="lazy">
-      ${uploaderTag}
-    `;
+    const src = item.thumbnailUrl || item.url;
+    div.innerHTML = `<div class="skeleton gallery-skeleton"></div>${uploaderTag}`;
+    const img = new Image();
+    img.onload = () => {
+      const sk = div.querySelector('.skeleton');
+      if (sk) { img.alt = ''; sk.replaceWith(img); }
+      div.classList.add('loaded');
+    };
+    img.src = src;
   }
 
   return div;
@@ -207,9 +214,11 @@ export class Lightbox {
 
     const name = item.uploaderName && item.uploaderName !== 'anonymous'
       ? item.uploaderName : '';
-    const date = item.createdAt?.toDate
-      ? formatDate(item.createdAt.toDate())
-      : '';
+    const date = item.takenAt?.toDate
+      ? formatDate(item.takenAt.toDate())
+      : item.createdAt?.toDate
+        ? formatDate(item.createdAt.toDate())
+        : '';
 
     this.infoEl.textContent = [name, date].filter(Boolean).join(' · ');
 

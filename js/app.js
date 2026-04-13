@@ -2,10 +2,20 @@ import { ensureAuth } from './firebase-config.js';
 import { validateFiles, generateThumbnail, uploadAll, getUploadedCount } from './upload.js';
 import { loadPhotos, getPhotoCount, renderGalleryItem, renderBackgroundGallery, Lightbox, INITIAL_PAGE_SIZE, MORE_PAGE_SIZE, escapeHtml } from './gallery.js';
 
+// === Utilities ===
+function withTimeout(promise, ms, message = 'Request timed out') {
+  let timeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(message)), ms);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
+}
+
 // === State ===
 let currentUser = null;
 let currentScreen = 'landing';
 let selectedFiles = [];
+let previewObjectURLs = [];
 let galleryItems = [];
 let galleryLoadedIds = new Set();
 let galleryLastDoc = null;
@@ -65,12 +75,20 @@ function showScreen(name) {
   if (name === 'gallery') {
     if (galleryItems.length > 0) {
       // 캐시된 데이터로 즉시 렌더링 (Firestore 호출 없음)
-      applyGalleryFilter();
+      // DOM이 이미 있으면 필터만 적용, 없으면 전체 렌더
+      if (galleryGrid.children.length > 0) {
+        applyGalleryFilter();
+      } else {
+        renderGalleryItems(galleryItems);
+      }
     } else {
       galleryLoading.hidden = false;
       galleryEmpty.hidden = true;
       btnLoadMore.hidden = true;
-      loadGallery(true);
+      if (!isLoadingGallery) {
+        loadGallery(true);
+      }
+      // isLoadingGallery가 true면: 진행 중인 로딩의 finally가 스피너를 숨길 것
     }
   }
 }
@@ -78,12 +96,12 @@ function showScreen(name) {
 // === Initialize ===
 async function init() {
   try {
-    currentUser = await ensureAuth();
+    currentUser = await withTimeout(ensureAuth(), 10_000, 'Auth timed out');
 
     // 배경 갤러리 + 사진 수를 병렬 로드 (20개 로드하여 갤러리 캐시로도 재사용)
     const [photosResult, count] = await Promise.all([
-      loadPhotos(null, INITIAL_PAGE_SIZE),
-      getPhotoCount()
+      withTimeout(loadPhotos(null, INITIAL_PAGE_SIZE), 10_000, 'Photos load timed out'),
+      withTimeout(getPhotoCount(), 5_000, 'Count timed out').catch(() => 0)
     ]);
     renderBackgroundGallery(photosResult.items, bgGallery);
     if (count > 0) {
@@ -102,8 +120,19 @@ async function init() {
     currentScreen = 'landing';
   } catch (error) {
     console.error('Initialization failed:', error);
-    loadingScreen.querySelector('.loading-text').textContent =
-      '초기화에 실패했습니다. 페이지를 새로고침해 주세요.';
+    const spinner = loadingScreen.querySelector('.loading-spinner');
+    const text = loadingScreen.querySelector('.loading-text');
+    const retryBtn = document.getElementById('btn-retry-init');
+
+    spinner.style.display = 'none';
+    text.textContent = '연결에 실패했습니다.';
+    retryBtn.hidden = false;
+    retryBtn.onclick = () => {
+      retryBtn.hidden = true;
+      spinner.style.display = '';
+      text.textContent = '잠시만 기다려 주세요';
+      init();
+    };
   }
 }
 
@@ -159,6 +188,11 @@ dropZone.addEventListener('drop', (e) => {
 fileInput.addEventListener('change', () => {
   handleFiles(fileInput.files);
   fileInput.value = '';
+});
+
+// Add more files
+document.getElementById('btn-add-files').addEventListener('click', () => {
+  fileInput.click();
 });
 
 // Clear files
@@ -219,6 +253,10 @@ async function handleFiles(fileList) {
 }
 
 function renderPreviews() {
+  // 이전 Object URL 해제
+  previewObjectURLs.forEach(url => URL.revokeObjectURL(url));
+  previewObjectURLs = [];
+
   if (selectedFiles.length === 0) {
     filePreview.hidden = true;
     dropZone.style.display = '';
@@ -262,16 +300,27 @@ function renderPreviews() {
   selectedFiles.forEach(async (file, i) => {
     const thumb = await generateThumbnail(file);
     const div = document.getElementById(`preview-${i}`);
-    if (!div || !thumb.url) return;
+    if (!div) return;
     const skeleton = div.querySelector('.skeleton');
     if (!skeleton) return;
 
     if (thumb.type === 'video') {
-      const placeholder = document.createElement('div');
-      placeholder.className = 'video-placeholder';
-      placeholder.innerHTML = '<div class="play-icon"></div>';
-      skeleton.replaceWith(placeholder);
+      if (thumb.url) {
+        previewObjectURLs.push(thumb.url);
+        const video = document.createElement('video');
+        video.src = thumb.url + '#t=0.001';
+        video.preload = 'metadata';
+        video.muted = true;
+        video.playsInline = true;
+        skeleton.replaceWith(video);
+      } else {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'video-placeholder';
+        placeholder.innerHTML = '<div class="play-icon"></div>';
+        skeleton.replaceWith(placeholder);
+      }
     } else {
+      if (!thumb.url) return;
       const img = document.createElement('img');
       img.src = thumb.url;
       img.alt = '';
@@ -339,6 +388,7 @@ async function startUpload() {
       galleryLoadedIds = new Set();
       galleryLastDoc = null;
       galleryHasMore = false;
+      galleryGrid.innerHTML = '';
 
       // 완료 화면 표시
       uploadProgress.hidden = true;
@@ -393,12 +443,9 @@ async function loadGallery(reset = false) {
   let newItems = [];
   try {
     const pageSize = reset ? INITIAL_PAGE_SIZE : MORE_PAGE_SIZE;
-    const { lastDoc, items, hasMore } = await Promise.race([
-      loadPhotos(galleryLastDoc, pageSize),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Gallery load timed out')), 10_000)
-      )
-    ]);
+    const { lastDoc, items, hasMore } = await withTimeout(
+      loadPhotos(galleryLastDoc, pageSize), 10_000, 'Gallery load timed out'
+    );
 
     galleryLastDoc = lastDoc;
     galleryHasMore = hasMore;
@@ -415,43 +462,46 @@ async function loadGallery(reset = false) {
     btnLoadMore.disabled = false;
     galleryLoading.hidden = true;
     if (reset) {
-      applyGalleryFilter();
+      renderGalleryItems(galleryItems);
     } else {
       appendNewGalleryItems(newItems);
     }
   }
 }
 
-// 클라이언트 사이드 필터링 + DOM 렌더링
-function applyGalleryFilter() {
+// 전체 갤러리 아이템 렌더링 (초기 진입/캐시 렌더용)
+function renderGalleryItems(items) {
   galleryGrid.innerHTML = '';
+  items.forEach(item => {
+    const el = renderGalleryItem(item);
+    el.addEventListener('click', () => openLightboxForItem(item));
+    galleryGrid.appendChild(el);
+  });
+  applyGalleryFilter();
+}
 
-  let filtered = galleryItems;
-  if (galleryFilter === 'image') {
-    filtered = galleryItems.filter(item => item.contentType && item.contentType.startsWith('image/'));
-  } else if (galleryFilter === 'video') {
-    filtered = galleryItems.filter(item => item.contentType && item.contentType.startsWith('video/'));
-  }
+// 클라이언트 사이드 필터링 (DOM 재생성 없이 visibility 토글)
+function applyGalleryFilter() {
+  const items = galleryGrid.querySelectorAll('.gallery-item');
 
-  if (filtered.length === 0) {
-    galleryEmpty.hidden = false;
-    galleryLoading.hidden = true;
-    btnLoadMore.hidden = true;
+  // DOM에 아이템이 없으면 전체 렌더링
+  if (items.length === 0 && galleryItems.length > 0) {
+    renderGalleryItems(galleryItems);
     return;
   }
 
-  galleryEmpty.hidden = true;
-  galleryLoading.hidden = true;
-
-  filtered.forEach((item, i) => {
-    const el = renderGalleryItem(item, i);
-    el.addEventListener('click', () => {
-      const idx = filtered.findIndex(gi => gi.id === item.id);
-      lightbox.open(filtered, idx >= 0 ? idx : 0);
-    });
-    galleryGrid.appendChild(el);
+  let visibleCount = 0;
+  items.forEach(el => {
+    const ct = el.dataset.contentType || '';
+    const show = galleryFilter === 'all'
+      || (galleryFilter === 'image' && ct.startsWith('image/'))
+      || (galleryFilter === 'video' && ct.startsWith('video/'));
+    el.style.display = show ? '' : 'none';
+    if (show) visibleCount++;
   });
 
+  galleryEmpty.hidden = visibleCount > 0;
+  galleryLoading.hidden = true;
   btnLoadMore.hidden = !galleryHasMore;
 }
 
@@ -462,28 +512,24 @@ function appendNewGalleryItems(items) {
     return;
   }
 
-  const startIndex = galleryGrid.children.length;
-  const filtered = items.filter(item => {
-    if (galleryFilter === 'image') return item.contentType?.startsWith('image/');
-    if (galleryFilter === 'video') return item.contentType?.startsWith('video/');
-    return true;
-  });
-
-  filtered.forEach((item, i) => {
-    const el = renderGalleryItem(item, startIndex + i);
-    el.addEventListener('click', () => {
-      const allFiltered = galleryItems.filter(it => {
-        if (galleryFilter === 'image') return it.contentType?.startsWith('image/');
-        if (galleryFilter === 'video') return it.contentType?.startsWith('video/');
-        return true;
-      });
-      const idx = allFiltered.findIndex(gi => gi.id === item.id);
-      lightbox.open(allFiltered, idx >= 0 ? idx : 0);
-    });
+  items.forEach(item => {
+    const el = renderGalleryItem(item);
+    el.addEventListener('click', () => openLightboxForItem(item));
     galleryGrid.appendChild(el);
   });
 
-  btnLoadMore.hidden = !galleryHasMore;
+  applyGalleryFilter();
+}
+
+// 라이트박스 열기 (현재 필터 기준 visible 아이템 목록 사용)
+function openLightboxForItem(item) {
+  const visibleItems = galleryItems.filter(it => {
+    if (galleryFilter === 'image') return it.contentType?.startsWith('image/');
+    if (galleryFilter === 'video') return it.contentType?.startsWith('video/');
+    return true;
+  });
+  const idx = visibleItems.findIndex(gi => gi.id === item.id);
+  lightbox.open(visibleItems, idx >= 0 ? idx : 0);
 }
 
 // === Toast ===

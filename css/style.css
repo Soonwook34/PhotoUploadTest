@@ -427,6 +427,11 @@ body {
   color: var(--color-text-light);
 }
 
+.file-preview-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .preview-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -671,41 +676,42 @@ body {
 }
 
 .gallery-grid {
-  column-count: 2;
-  column-gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
 }
 
 @media (min-width: 768px) {
-  .gallery-grid { column-count: 3; }
-}
-
-@media (min-width: 1200px) {
-  .gallery-grid { column-count: 4; }
+  .gallery-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
 .gallery-item {
-  break-inside: avoid;
-  margin-bottom: 8px;
+  position: relative;
+  aspect-ratio: 3/4;
   border-radius: var(--radius-sm);
   overflow: hidden;
   cursor: pointer;
-  position: relative;
-  animation: fadeInUp 0.4s ease both;
+  background: var(--color-accent);
 }
 
-.gallery-item img {
-  width: 100%;
-  display: block;
-  transition: transform 0.3s ease;
-}
-
+.gallery-item img,
 .gallery-item video {
   width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.gallery-item:hover img {
-  transform: scale(1.02);
+.gallery-item.loaded img,
+.gallery-item.loaded video {
+  opacity: 1;
+}
+
+.gallery-skeleton {
+  width: 100%;
+  height: 100%;
 }
 
 .gallery-item .video-overlay {
@@ -749,16 +755,7 @@ body {
   border-radius: 4px;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* fadeInUp는 더 이상 갤러리에서 사용하지 않음 (이미지 로드 시 opacity 트랜지션 사용) */
 
 .gallery-empty {
   text-align: center;

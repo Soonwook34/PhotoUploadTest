@@ -17,6 +17,7 @@
     <div class="loading-content">
       <div class="loading-spinner"></div>
       <p class="loading-text">잠시만 기다려 주세요</p>
+      <button id="btn-retry-init" class="btn btn-secondary" style="margin-top:16px" hidden>다시 시도</button>
     </div>
   </div>
 
@@ -76,7 +77,10 @@
       <div id="file-preview" class="file-preview" hidden>
         <div class="file-preview-header">
           <span id="file-count" class="file-count">0/50 선택됨</span>
-          <button id="btn-clear-files" class="btn-text">전체 삭제</button>
+          <div class="file-preview-actions">
+            <button id="btn-add-files" class="btn-text">+ 추가</button>
+            <button id="btn-clear-files" class="btn-text">전체 삭제</button>
+          </div>
         </div>
         <div id="preview-grid" class="preview-grid"></div>
         <button id="btn-start-upload" class="btn btn-primary btn-upload-start">업로드</button>

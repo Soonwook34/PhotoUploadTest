@@ -1,6 +1,7 @@
 import { ref, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js';
-import { collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+import { collection, addDoc, serverTimestamp, Timestamp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 import { storage, db } from './firebase-config.js';
+import exifr from 'https://cdn.jsdelivr.net/npm/exifr/dist/lite.esm.js';
 
 const MAX_FILES = 50;
 const MAX_IMAGE_SIZE = 50 * 1024 * 1024;  // 50MB
@@ -66,6 +67,20 @@ export function validateFiles(files, uid) {
 
 const THUMB_MAX_SIZE = 1440;
 const THUMB_QUALITY = 0.7;
+
+/**
+ * 사진 EXIF에서 촬영 시간을 추출합니다.
+ * @returns {Promise<Date|null>}
+ */
+export async function extractTakenAt(file) {
+  if (!file.type.startsWith('image/')) return null;
+  try {
+    const exif = await exifr.parse(file, ['DateTimeOriginal']);
+    return exif?.DateTimeOriginal || null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * 갤러리 표시용 썸네일을 생성합니다 (800px, JPEG 70%).
@@ -166,8 +181,7 @@ function createVideoThumbnail(file) {
  */
 export async function generateThumbnail(file) {
   if (file.type.startsWith('video/')) {
-    // 영상은 플레이스홀더 (iPhone Safari에서 blob video 미리보기 불가)
-    return { type: 'video', url: '' };
+    return { type: 'video', url: URL.createObjectURL(file) };
   }
 
   return new Promise((resolve) => {
@@ -227,7 +241,9 @@ async function uploadSingleFile(file, originalName, contentType, uid, uploaderNa
     }
   })();
 
-  const [url, thumbnailUrl] = await Promise.all([originalUpload, thumbnailUpload]);
+  const [url, thumbnailUrl, takenAt] = await Promise.all([
+    originalUpload, thumbnailUpload, extractTakenAt(file)
+  ]);
 
   // Firestore에 메타데이터 저장
   await addDoc(collection(db, 'photos'), {
@@ -239,6 +255,7 @@ async function uploadSingleFile(file, originalName, contentType, uid, uploaderNa
     uid,
     uploaderName: uploaderName || 'anonymous',
     storagePath: path,
+    takenAt: takenAt ? Timestamp.fromDate(takenAt) : null,
     createdAt: serverTimestamp()
   });
 
