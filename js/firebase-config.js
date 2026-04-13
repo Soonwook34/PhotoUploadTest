@@ -8,12 +8,12 @@ import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gsta
 // Firebase Console > 프로젝트 설정 > 일반 > 내 앱 > 웹 앱에서 확인 가능
 // ============================================
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.firebasestorage.app",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAGxy3vri7DWXXlkiP0k-bFWImerbliQXM",
+  authDomain: "nth-pottery-363101.firebaseapp.com",
+  projectId: "nth-pottery-363101",
+  storageBucket: "nth-pottery-363101.firebasestorage.app",
+  messagingSenderId: "911683179558",
+  appId: "1:911683179558:web:6fe9e68741d291499802e7"
 };
 
 const app = initializeApp(firebaseConfig);
