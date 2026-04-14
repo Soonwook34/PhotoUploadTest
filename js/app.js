@@ -154,6 +154,11 @@ async function init() {
 
 // === Event Listeners ===
 
+// 이미지 저장 방지 (우클릭 차단)
+bgGallery.addEventListener('contextmenu', e => e.preventDefault());
+galleryGrid.addEventListener('contextmenu', e => e.preventDefault());
+lightbox.el.addEventListener('contextmenu', e => e.preventDefault());
+
 // Navigation
 document.getElementById('btn-upload').addEventListener('click', () => {
   resetUploadScreen();

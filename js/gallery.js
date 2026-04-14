@@ -65,7 +65,7 @@ export function renderGalleryItem(item) {
 
   if (item.contentType?.startsWith('video/')) {
     if (item.thumbnailUrl) {
-      div.innerHTML = `<img src="${item.thumbnailUrl}" alt="">
+      div.innerHTML = `<img src="${item.thumbnailUrl}" alt="" draggable="false">
         <div class="video-overlay"><div class="play-icon"></div></div>${uploaderTag}`;
       div.querySelector('img').onload = () => div.classList.add('loaded');
     } else {
@@ -75,7 +75,7 @@ export function renderGalleryItem(item) {
     }
   } else {
     const src = item.thumbnailUrl || item.url;
-    div.innerHTML = `<img src="${src}" alt="">${uploaderTag}`;
+    div.innerHTML = `<img src="${src}" alt="" draggable="false">${uploaderTag}`;
     div.querySelector('img').onload = () => div.classList.add('loaded');
   }
 
@@ -110,6 +110,7 @@ export function renderBackgroundGallery(items, container) {
     const img = document.createElement('img');
     img.src = selected[i].thumbnailUrl || selected[i].url;
     img.alt = '';
+    img.draggable = false;
     // 이미지 로드 완료 시 개별 fade-in (순서대로 약간의 딜레이)
     img.onload = () => {
       setTimeout(() => img.classList.add('loaded'), i * 60);
@@ -206,9 +207,9 @@ export class Lightbox {
     if (!item) return;
 
     if (item.contentType && item.contentType.startsWith('video/')) {
-      this.contentEl.innerHTML = `<video src="${item.url}" controls playsinline autoplay></video>`;
+      this.contentEl.innerHTML = `<video src="${item.url}" controls controlsList="nodownload" playsinline autoplay></video>`;
     } else {
-      this.contentEl.innerHTML = `<img src="${item.thumbnailUrl || item.url}" alt="">`;
+      this.contentEl.innerHTML = `<img src="${item.thumbnailUrl || item.url}" alt="" draggable="false">`;
     }
 
     const name = item.uploaderName && item.uploaderName !== 'anonymous'
