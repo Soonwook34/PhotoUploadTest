@@ -131,11 +131,12 @@ async function init() {
       photoCount.textContent = `지금까지 ${count}장의 사진이 공유되었습니다`;
     }
 
-    // 갤러리 캐시에 저장 (갤러리 첫 진입 시 Firestore 호출 불필요)
+    // 갤러리 캐시에 저장 + 미리 렌더링 (갤러리 진입 시 즉시 표시)
     galleryItems = photosResult.items;
     photosResult.items.forEach(item => galleryLoadedIds.add(item.id));
     galleryLastDoc = photosResult.lastDoc;
     galleryHasMore = photosResult.hasMore;
+    renderGalleryItems(galleryItems);
 
     // 로딩 화면 제거
     loadingScreen.classList.remove('active');
@@ -611,7 +612,6 @@ function appendNewGalleryItems(items) {
   // 필터 통과한 새 요소만 Masonry에 등���
   const visibleNew = newElements.filter(el => el.classList.contains('gallery-item'));
   if (masonryInstance && visibleNew.length > 0) {
-    masonryInstance.appended(visibleNew);
     imagesLoaded(visibleNew).on('progress', () => {
       if (masonryInstance) masonryInstance.layout();
     });
