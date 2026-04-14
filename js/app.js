@@ -534,7 +534,7 @@ async function loadGallery(reset = false) {
 function initMasonry() {
   if (masonryInstance) masonryInstance.destroy();
   masonryInstance = new Masonry(galleryGrid, {
-    itemSelector: '.gallery-item',
+    itemSelector: '.gallery-item:not(.gallery-item-hidden)',
     percentPosition: true,
     gutter: 4,
     transitionDuration: '0.2s'
@@ -542,36 +542,54 @@ function initMasonry() {
   imagesLoaded(galleryGrid).on('progress', () => {
     if (masonryInstance) masonryInstance.layout();
   });
+  // imagesLoaded는 <video>를 추적하지 못하므로 별도 처리
+  galleryGrid.querySelectorAll('.gallery-item video').forEach(video => {
+    video.addEventListener('loadeddata', () => {
+      if (masonryInstance) masonryInstance.layout();
+    }, { once: true });
+  });
 }
 
-function renderGalleryItems() {
-  applyGalleryFilter();
-}
-
-function applyGalleryFilter() {
+function renderGalleryItems(items) {
   if (masonryInstance) {
     masonryInstance.destroy();
     masonryInstance = null;
   }
   galleryGrid.innerHTML = '';
-
-  const filtered = galleryItems.filter(item => {
-    if (galleryFilter === 'image') return item.contentType?.startsWith('image/');
-    if (galleryFilter === 'video') return item.contentType?.startsWith('video/');
-    return true;
-  });
-
-  filtered.forEach(item => {
+  items.forEach(item => {
     const el = renderGalleryItem(item);
     el.addEventListener('click', () => openLightboxForItem(item));
     galleryGrid.appendChild(el);
   });
+  applyGalleryFilter();
+  initMasonry();
+}
 
-  galleryEmpty.hidden = filtered.length > 0;
+function applyGalleryFilter() {
+  let visibleCount = 0;
+  galleryGrid.querySelectorAll('.gallery-item, .gallery-item-hidden').forEach(el => {
+    const ct = el.dataset.contentType || '';
+    const show = galleryFilter === 'all'
+      || (galleryFilter === 'image' && ct.startsWith('image/'))
+      || (galleryFilter === 'video' && ct.startsWith('video/'));
+    if (show) {
+      el.classList.remove('gallery-item-hidden');
+      el.classList.add('gallery-item');
+      visibleCount++;
+    } else {
+      el.classList.remove('gallery-item');
+      el.classList.add('gallery-item-hidden');
+    }
+  });
+
+  galleryEmpty.hidden = visibleCount > 0;
   hideGalleryLoading();
   btnLoadMore.hidden = !galleryHasMore;
 
-  initMasonry();
+  if (masonryInstance) {
+    masonryInstance.reloadItems();
+    masonryInstance.layout();
+  }
 }
 
 // 더보기: 새 항목만 현재 그리드에 추가 (전체 재렌더링 없음)
@@ -579,27 +597,32 @@ function appendNewGalleryItems(items) {
   btnLoadMore.hidden = !galleryHasMore;
   if (items.length === 0) return;
 
-  // 현재 필터에 맞는 항목만 추가
-  const filtered = items.filter(item => {
-    if (galleryFilter === 'image') return item.contentType?.startsWith('image/');
-    if (galleryFilter === 'video') return item.contentType?.startsWith('video/');
-    return true;
-  });
-
-  if (filtered.length === 0) return;
-
   const newElements = [];
-  filtered.forEach(item => {
+  items.forEach(item => {
     const el = renderGalleryItem(item);
     el.addEventListener('click', () => openLightboxForItem(item));
     galleryGrid.appendChild(el);
     newElements.push(el);
   });
 
-  if (masonryInstance) {
-    masonryInstance.appended(newElements);
-    imagesLoaded(newElements).on('progress', () => {
+  // 필터 적용 (숨길 항목은 gallery-item-hidden으로 전환)
+  applyGalleryFilter();
+
+  // 필터 통과한 새 요소만 Masonry에 등���
+  const visibleNew = newElements.filter(el => el.classList.contains('gallery-item'));
+  if (masonryInstance && visibleNew.length > 0) {
+    masonryInstance.appended(visibleNew);
+    imagesLoaded(visibleNew).on('progress', () => {
       if (masonryInstance) masonryInstance.layout();
+    });
+    // video 요소 별도 처리
+    visibleNew.forEach(el => {
+      const video = el.querySelector('video');
+      if (video) {
+        video.addEventListener('loadeddata', () => {
+          if (masonryInstance) masonryInstance.layout();
+        }, { once: true });
+      }
     });
   }
 }
