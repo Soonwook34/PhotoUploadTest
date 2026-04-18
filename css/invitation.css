@@ -138,21 +138,21 @@ body {
 
 .couple-sub {
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: 12px;
     letter-spacing: 0.15em;
     color: var(--color-gray-muted);
     margin-top: 6px;
 }
 
 .couple-heart {
-    width: 36px;
-    height: 36px;
+    width: 64px;
+    height: 64px;
     flex-shrink: 0;
 }
 
 .hero-date {
     font-family: var(--font-mono);
-    font-size: 16px;
+    font-size: 15px;
     letter-spacing: 0.08em;
     color: var(--color-ink);
     margin-bottom: 24px;
@@ -177,7 +177,7 @@ body {
 .dday {
     margin-top: 20px;
     font-family: var(--font-mono);
-    font-size: 15px;
+    font-size: 12px;
     letter-spacing: 0.1em;
     color: var(--color-mint-dark);
 }
@@ -189,7 +189,7 @@ body {
 }
 
 .greeting-text {
-    font-size: 16px;
+    font-size: 15px;
     line-height: 2;
     color: var(--color-ink);
     margin-bottom: 32px;
@@ -208,7 +208,7 @@ body {
 .parents-line {
     font-size: 15px;
     color: var(--color-ink);
-    line-height: 1.7;
+    line-height: 1.8;
 }
 
 .parents-line strong {
@@ -223,17 +223,17 @@ body {
 }
 
 .venue-name {
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-size: 20px;
     font-weight: 700;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
     color: var(--color-ink-strong);
     margin-bottom: 8px;
     text-align: center;
 }
 
 .venue-address {
-    font-size: 15px;
+    font-size: 12px;
     color: var(--color-gray-muted);
     line-height: 1.7;
     text-align: center;
@@ -248,7 +248,7 @@ body {
 
 .cal-title {
     font-family: var(--font-mono);
-    font-size: 16px;
+    font-size: 15px;
     letter-spacing: 0.15em;
     margin-bottom: 16px;
     color: var(--color-ink);
@@ -261,11 +261,11 @@ body {
     max-width: 280px;
     margin: 0 auto;
     font-family: var(--font-mono);
-    font-size: 15px;
+    font-size: 12px;
 }
 
 .cal-head {
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 0.15em;
     color: var(--color-gray-muted);
     padding: 4px 0;
@@ -335,17 +335,16 @@ body {
 }
 
 .transport-item h3 {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    font-weight: 400;
-    letter-spacing: var(--track-label);
-    text-transform: uppercase;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
     color: var(--color-ink);
     margin-bottom: 6px;
 }
 
 .transport-item p {
-    font-size: 16px;
+    font-size: 15px;
     color: var(--color-gray-muted);
     line-height: 1.7;
 }
@@ -365,10 +364,9 @@ body {
     border: 1px solid var(--color-ink);
     color: var(--color-ink);
     text-decoration: none;
-    font-family: var(--font-mono);
-    font-size: 13px;
-    letter-spacing: var(--track-label);
-    text-transform: uppercase;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    letter-spacing: 0.02em;
     border-radius: 2px;
     text-align: center;
 }
@@ -390,11 +388,10 @@ body {
 }
 
 .contact-group h3 {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    font-weight: 400;
-    letter-spacing: var(--track-label);
-    text-transform: uppercase;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
     color: var(--color-ink);
     margin-bottom: 12px;
     text-align: left;
@@ -418,10 +415,9 @@ body {
     justify-content: space-between;
     padding: 10px 0;
     border-bottom: 1px solid var(--color-gray-line);
-    font-family: var(--font-mono);
-    font-size: 13px;
-    letter-spacing: var(--track-label);
-    text-transform: uppercase;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    letter-spacing: 0.05em;
     color: var(--color-gray-muted);
     cursor: pointer;
     list-style: none;
@@ -447,18 +443,18 @@ body {
 }
 
 .contact-label {
-    font-size: 16px;
+    font-size: 15px;
     color: var(--color-ink);
 }
 
 .contact-actions {
     display: flex;
-    gap: 6px;
+    gap: 16px;
 }
 
 .contact-btn {
-    width: 44px;
-    height: 44px;
+    width: 52px;
+    height: 52px;
     padding: 0;
     display: inline-flex;
     align-items: center;
@@ -471,8 +467,8 @@ body {
 }
 
 .contact-btn svg {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
 }
 
 /* 사진 업로드 링크 */
@@ -517,11 +513,10 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 14px 16px;
-    font-family: var(--font-mono);
-    font-size: 14px;
-    font-weight: 400;
-    letter-spacing: var(--track-label);
-    text-transform: uppercase;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
     color: var(--color-ink);
     cursor: pointer;
     list-style: none;
@@ -571,37 +566,35 @@ body {
 }
 
 .account-label {
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-size: 12px;
     color: var(--color-gray-muted);
     margin-bottom: 2px;
-    letter-spacing: var(--track-label);
-    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .account-detail {
-    font-family: var(--font-mono);
-    font-size: 16px;
+    font-family: var(--font-sans);
+    font-size: 15px;
     color: var(--color-ink);
     font-variant-numeric: tabular-nums;
     word-break: break-all;
 }
 
 .account-holder {
-    font-size: 14px;
+    font-size: 12px;
     color: var(--color-gray-muted);
     margin-top: 2px;
 }
 
 .account-copy {
-    padding: 6px 12px;
+    padding: 8px 14px;
     background: transparent;
     border: 1px solid var(--color-ink);
     color: var(--color-ink);
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-size: 12px;
-    letter-spacing: var(--track-label);
-    text-transform: uppercase;
+    letter-spacing: 0.05em;
     border-radius: 2px;
     cursor: pointer;
     flex-shrink: 0;
@@ -639,9 +632,9 @@ footer {
 }
 
 .footer-text {
-    font-size: 14px;
+    font-size: 15px;
     color: var(--color-gray-muted);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.05em;
     margin-top: 12px;
 }
 
@@ -809,18 +802,18 @@ footer {
 /* 디자인 공용 컴포넌트 (Boarding Pass 시스템) */
 
 .section-label {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    letter-spacing: var(--track-label);
-    text-transform: uppercase;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
     color: var(--color-ink);
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     text-align: center;
 }
 
 .rail {
     overflow: hidden;
-    padding: 10px 0;
+    padding: 6px 0;
     border-top: 1px solid var(--color-gray-line);
     border-bottom: 1px solid var(--color-gray-line);
     background: #fff;
@@ -834,7 +827,7 @@ footer {
 
 .rail__text {
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: 10px;
     color: var(--color-gray-chevron);
     letter-spacing: var(--track-rail);
     white-space: nowrap;
@@ -871,17 +864,17 @@ footer {
 }
 
 .kv-label {
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-size: 12px;
-    letter-spacing: var(--track-label);
-    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 0.08em;
     color: var(--color-gray-muted);
     margin-bottom: 6px;
 }
 
 .kv-value {
     font-family: var(--font-mono);
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
     letter-spacing: 0.04em;
     color: var(--color-ink-strong);
@@ -892,10 +885,10 @@ footer {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    font-family: var(--font-mono);
-    font-size: 14px;
-    letter-spacing: var(--track-label);
-    text-transform: uppercase;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
     padding: 16px 32px;
     background: var(--color-ink-strong);
     color: #fff;
@@ -946,7 +939,7 @@ footer {
 .headline-en {
     font-family: var(--font-mono);
     font-weight: 700;
-    font-size: 18px;
+    font-size: 20px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--color-ink-strong);
@@ -956,7 +949,7 @@ footer {
 }
 
 .headline-en.big {
-    font-size: 26px;
+    font-size: 30px;
     letter-spacing: 0.1em;
     margin-bottom: 20px;
 }
