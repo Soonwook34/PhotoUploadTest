@@ -296,6 +296,38 @@ body {
     border-bottom: none;
 }
 
+.contact-parents-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #F2FCFB;
+    font-size: 13px;
+    color: #999;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+.contact-parents-toggle::-webkit-details-marker {
+    display: none;
+}
+
+.contact-parents-toggle .chevron {
+    font-size: 16px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+
+.contact-parents[open] .contact-parents-toggle {
+    color: #81C7C0;
+    border-bottom: 1px solid #E8F5F2;
+}
+
+.contact-parents[open] .chevron {
+    transform: rotate(90deg);
+}
+
 .contact-label {
     font-size: 14px;
     color: #555;

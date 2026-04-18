@@ -112,17 +112,39 @@ function renderContacts(data) {
   const { groom, bride } = data;
   const container = $('[data-bind="contacts"]');
   if (!container) return;
+
+  function renderRow(p) {
+    if (!p.phone || p.hidden) return null;
+    const row = document.createElement('div');
+    row.className = 'contact-row';
+    const tel = formatPhoneNumber(p.phone);
+    row.innerHTML = `
+      <span class="contact-label">${p.label}</span>
+      <div class="contact-actions">
+        <a class="contact-btn" href="tel:${tel}" aria-label="전화">전화</a>
+        <a class="contact-btn" href="sms:${tel}" aria-label="문자">문자</a>
+      </div>
+    `;
+    return row;
+  }
+
   const groups = [
-    { title: '신랑측', people: [
-      { label: groom.name + ' (신랑)', phone: groom.phone },
-      { label: formatParentName(groom.father) + ' (아버지)', phone: groom.father?.phone, hidden: groom.father?.deceased },
-      { label: formatParentName(groom.mother) + ' (어머니)', phone: groom.mother?.phone, hidden: groom.mother?.deceased }
-    ]},
-    { title: '신부측', people: [
-      { label: bride.name + ' (신부)', phone: bride.phone },
-      { label: formatParentName(bride.father) + ' (아버지)', phone: bride.father?.phone, hidden: bride.father?.deceased },
-      { label: formatParentName(bride.mother) + ' (어머니)', phone: bride.mother?.phone, hidden: bride.mother?.deceased }
-    ]}
+    {
+      title: '신랑측',
+      main: { label: groom.name + ' (신랑)', phone: groom.phone },
+      parents: [
+        { label: formatParentName(groom.father) + ' (아버지)', phone: groom.father?.phone, hidden: groom.father?.deceased },
+        { label: formatParentName(groom.mother) + ' (어머니)', phone: groom.mother?.phone, hidden: groom.mother?.deceased }
+      ]
+    },
+    {
+      title: '신부측',
+      main: { label: bride.name + ' (신부)', phone: bride.phone },
+      parents: [
+        { label: formatParentName(bride.father) + ' (아버지)', phone: bride.father?.phone, hidden: bride.father?.deceased },
+        { label: formatParentName(bride.mother) + ' (어머니)', phone: bride.mother?.phone, hidden: bride.mother?.deceased }
+      ]
+    }
   ];
 
   container.innerHTML = '';
@@ -133,20 +155,21 @@ function renderContacts(data) {
     title.textContent = group.title;
     wrapper.appendChild(title);
 
-    group.people.forEach((p) => {
-      if (!p.phone || p.hidden) return;
-      const row = document.createElement('div');
-      row.className = 'contact-row';
-      const tel = formatPhoneNumber(p.phone);
-      row.innerHTML = `
-        <span class="contact-label">${p.label}</span>
-        <div class="contact-actions">
-          <a class="contact-btn" href="tel:${tel}" aria-label="전화">전화</a>
-          <a class="contact-btn" href="sms:${tel}" aria-label="문자">문자</a>
-        </div>
-      `;
-      wrapper.appendChild(row);
-    });
+    const mainRow = renderRow(group.main);
+    if (mainRow) wrapper.appendChild(mainRow);
+
+    const parentRows = group.parents.map(renderRow).filter(Boolean);
+    if (parentRows.length > 0) {
+      const details = document.createElement('details');
+      details.className = 'contact-parents';
+      const summary = document.createElement('summary');
+      summary.className = 'contact-parents-toggle';
+      summary.innerHTML = '<span>혼주에게 연락</span><span class="chevron">›</span>';
+      details.appendChild(summary);
+      parentRows.forEach((r) => details.appendChild(r));
+      wrapper.appendChild(details);
+    }
+
     container.appendChild(wrapper);
   });
 }
