@@ -15,9 +15,9 @@ let lightbox = null;
 const $ = (sel) => document.querySelector(sel);
 
 const LABELS = {
-  heroLabel: 'WEDDING_INVITATION',
+  heroLabel: 'WEDDING PASS',
   greetingLabel: '인사말',
-  greetingHeadline: 'JOIN US FOR OUR FIRST FLIGHT',
+  greetingHeadline: 'READY FOR TAKEOFF AS ONE',
   eventDetailsLabel: '예식 안내',
   storyLabel: '우리의 이야기',
   directionsLabel: '오시는 길',
@@ -189,16 +189,19 @@ function renderMapApps(data) {
     return;
   }
   const apps = [
-    { key: 'naver', label: '네이버지도' },
-    { key: 'kakao', label: '카카오맵' },
-    { key: 'tmap', label: '티맵' }
+    { key: 'naver', label: '네이버지도', icon: 'assets/icons/app-naver-map.webp' },
+    { key: 'kakao', label: '카카오맵',   icon: 'assets/icons/app-kakao-map.png' },
+    { key: 'tmap',  label: '티맵',       icon: 'assets/icons/app-tmap.svg' }
   ];
   section.innerHTML = '';
-  apps.forEach(({ key, label }) => {
+  apps.forEach(({ key, label, icon }) => {
     const btn = document.createElement('a');
     btn.className = 'map-btn';
     btn.href = buildMapUrl(key, data.wedding.venue);
-    btn.textContent = label;
+    btn.innerHTML = `
+      <img class="map-btn__icon" src="${icon}" alt="">
+      <span class="map-btn__label">${label}</span>
+    `;
     section.appendChild(btn);
   });
 }

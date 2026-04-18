@@ -19,7 +19,12 @@
 <body>
 
     <div id="loading" class="loading">
-        <div class="shimmer"></div>
+        <div class="loading__sky">
+            <svg class="loading__plane" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M7 0L6 2V5L0 9V11H1L6 10L7 13L5 14V16H11V14L9 13L10 10L15 11H16V9L10 5V2L9 0H7Z" fill="currentColor"/>
+            </svg>
+        </div>
+        <p class="loading__text">티켓 발권중...</p>
     </div>
 
     <div class="invitation">
@@ -33,7 +38,7 @@
                     <h1 class="couple-name" data-bind="groom-name">&nbsp;</h1>
                     <p class="couple-sub" data-bind="groom-sub"></p>
                 </div>
-                <span class="couple-heart icon-inline icon-mint" data-icon="heart" aria-hidden="true"></span>
+                <span class="couple-heart icon-inline icon-mint" data-icon="heart" aria-hidden="true" style="width:64px;height:64px;"></span>
                 <div class="couple-side">
                     <h1 class="couple-name" data-bind="bride-name">&nbsp;</h1>
                     <p class="couple-sub" data-bind="bride-sub"></p>
@@ -53,7 +58,7 @@
             <h2 class="headline-en">
                 <span data-bind-label="greetingHeadline"></span>
             </h2>
-            <span class="icon-inline icon-ink headline-icon" data-icon="plane" style="width:40px;height:40px;"></span>
+            <span class="icon-inline icon-ink headline-icon" data-icon="flight-takeoff" style="width:40px;height:40px;"></span>
             <p class="greeting-text" data-bind="greeting-body"></p>
             <div class="parents-grid">
                 <div>
@@ -113,10 +118,10 @@
         <section class="section photo-link">
             <p class="section-label" data-bind-label="uploadLabel"></p>
             <p class="photo-sub" data-bind-label="uploadSub"></p>
+            <span class="icon-inline cta-icon-above" data-icon="plane" style="width:40px;height:40px;color:var(--color-mint);"></span>
             <a data-bind="upload-link" href="upload/" class="btn-mono mint">
                 <span data-bind-label="uploadCta"></span>
             </a>
-            <span class="icon-inline cta-icon" data-icon="plane" style="width:28px;height:28px;color:var(--color-mint);"></span>
         </section>
 
         <section class="section account" data-section="accounts">
@@ -128,7 +133,7 @@
         <div class="perforation"></div>
 
         <section class="section share-section mint-panel">
-            <h2 class="headline-en big">
+            <h2 class="headline-en">
                 <span data-bind-label="shareHeadline"></span>
             </h2>
             <span class="icon-inline icon-ink headline-icon" data-icon="stamp" style="width:40px;height:40px;"></span>
