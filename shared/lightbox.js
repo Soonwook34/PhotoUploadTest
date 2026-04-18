@@ -17,8 +17,9 @@ export class Lightbox {
     this.items = [];
     this.currentIndex = 0;
 
-    this.touchStartX = 0;
-    this.touchEndX = 0;
+    this._touchStartX = 0;
+    this._touchStartY = 0;
+    this._touchMoved = false;
 
     this._bindEvents();
   }
@@ -39,15 +40,30 @@ export class Lightbox {
       if (e.key === 'ArrowRight') this.next();
     });
 
-    this.contentEl.addEventListener('touchstart', (e) => {
-      this.touchStartX = e.changedTouches[0].screenX;
+    this.el.addEventListener('touchstart', (e) => {
+      const t = e.changedTouches[0];
+      this._touchStartX = t.clientX;
+      this._touchStartY = t.clientY;
+      this._touchMoved = false;
     }, { passive: true });
 
-    this.contentEl.addEventListener('touchend', (e) => {
-      this.touchEndX = e.changedTouches[0].screenX;
-      const diff = this.touchStartX - this.touchEndX;
-      if (Math.abs(diff) > 50) {
-        if (diff > 0) this.next();
+    this.el.addEventListener('touchmove', (e) => {
+      const t = e.changedTouches[0];
+      const dx = t.clientX - this._touchStartX;
+      const dy = t.clientY - this._touchStartY;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+        this._touchMoved = true;
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    this.el.addEventListener('touchend', (e) => {
+      if (!this._touchMoved) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - this._touchStartX;
+      const dy = t.clientY - this._touchStartY;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+        if (dx < 0) this.next();
         else this.prev();
       }
     }, { passive: true });
