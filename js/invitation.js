@@ -6,6 +6,9 @@ import {
   buildMapUrl, copyToClipboard, showToast,
   loadInvitationImageFallback, loadGalleryImages
 } from './utils.js';
+import { Lightbox } from '../shared/lightbox.js';
+
+let lightbox = null;
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -204,12 +207,18 @@ function renderGallery(urls) {
     container.closest('section')?.style?.setProperty('display', 'none');
     return;
   }
+  const items = urls.map((url) => ({ url, contentType: 'image/jpeg' }));
   container.innerHTML = '';
-  urls.forEach((url) => {
+  urls.forEach((url, index) => {
     const img = document.createElement('img');
     img.src = url;
     img.loading = 'lazy';
     img.alt = '';
+    img.style.cursor = 'pointer';
+    img.addEventListener('click', () => {
+      if (!lightbox) lightbox = new Lightbox();
+      lightbox.open(items, index);
+    });
     container.appendChild(img);
   });
 }
