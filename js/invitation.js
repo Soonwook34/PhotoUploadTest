@@ -14,7 +14,7 @@ let lightbox = null;
 
 const $ = (sel) => document.querySelector(sel);
 
-const DEFAULT_LABELS = {
+const LABELS = {
   heroLabel: 'WEDDING_INVITATION',
   greetingLabel: '인사말',
   greetingHeadline: 'JOIN US FOR OUR FIRST FLIGHT',
@@ -35,11 +35,10 @@ const DEFAULT_LABELS = {
   thankYouText: '함께해 주셔서 감사합니다'
 };
 
-function renderLabels(data) {
-  const labels = { ...DEFAULT_LABELS, ...(data.design?.labels || {}) };
+function renderLabels() {
   document.querySelectorAll('[data-bind-label]').forEach((el) => {
     const key = el.dataset.bindLabel;
-    if (labels[key] != null) el.textContent = labels[key];
+    if (LABELS[key] != null) el.textContent = LABELS[key];
   });
 }
 
@@ -492,7 +491,7 @@ async function init() {
     }
 
     toggleSections(data);
-    renderLabels(data);
+    renderLabels();
     renderRails(data);
     renderHero(data, heroUrl);
     renderDday(data);
