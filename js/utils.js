@@ -160,13 +160,41 @@ export async function loadInvitationImage(path) {
   }
 }
 
-/** basePath 에 확장자들을 순차 시도하여 첫 성공 URL 반환. 예: loadInvitationImageFallback('invitation/hero') */
-export async function loadInvitationImageFallback(basePath, exts = ['jpg', 'jpeg', 'png', 'webp']) {
-  for (const ext of exts) {
-    const url = await loadInvitationImage(`${basePath}.${ext}`);
-    if (url) return url;
+// 폴더별 listAll 결과를 캐시해 중복 요청/불필요한 404 로그를 방지.
+const _folderItemsCache = new Map();
+function listFolderItems(folderPath) {
+  if (!_folderItemsCache.has(folderPath)) {
+    const p = listAll(ref(storage, folderPath))
+      .then((res) => res.items)
+      .catch(() => []);
+    _folderItemsCache.set(folderPath, p);
   }
-  return null;
+  return _folderItemsCache.get(folderPath);
+}
+
+/**
+ * 폴더를 listAll 한 뒤 basename 이 일치하는 파일을 찾아 URL 반환.
+ * 확장자를 순차 시도하지 않으므로 404 console 에러가 발생하지 않음.
+ * 예: loadInvitationImageFallback('invitation/hero') → 'invitation/hero.jpeg' 자동 매칭
+ */
+export async function loadInvitationImageFallback(basePath) {
+  const slash = basePath.lastIndexOf('/');
+  const folder = slash === -1 ? '' : basePath.slice(0, slash);
+  const base = slash === -1 ? basePath : basePath.slice(slash + 1);
+
+  const items = await listFolderItems(folder);
+  const match = items.find((it) => {
+    const name = it.name;
+    const dot = name.lastIndexOf('.');
+    const itemBase = dot === -1 ? name : name.slice(0, dot);
+    return itemBase === base;
+  });
+  if (!match) return null;
+  try {
+    return await getDownloadURL(match);
+  } catch {
+    return null;
+  }
 }
 
 export async function loadGalleryImages() {
