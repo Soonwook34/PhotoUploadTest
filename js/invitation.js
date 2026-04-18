@@ -16,21 +16,21 @@ const $ = (sel) => document.querySelector(sel);
 
 const DEFAULT_LABELS = {
   heroLabel: 'WEDDING_INVITATION',
-  greetingLabel: 'GREETING',
+  greetingLabel: '인사말',
   greetingHeadline: 'JOIN US FOR OUR FIRST FLIGHT',
-  eventDetailsLabel: 'EVENT_DETAILS',
-  storyLabel: 'OUR_STORY',
-  directionsLabel: 'DIRECTIONS',
-  contactsLabel: 'CONTACTS',
-  uploadLabel: 'UPLOAD_YOUR_PHOTOS',
+  eventDetailsLabel: '예식 안내',
+  storyLabel: '우리의 이야기',
+  directionsLabel: '오시는 길',
+  contactsLabel: '연락하기',
+  uploadLabel: '사진 업로드',
   uploadSub: '소중한 사진과 영상을 함께 남겨주세요',
-  uploadCta: 'UPLOAD',
-  accountsLabel: 'ACCOUNTS',
+  uploadCta: '사진 올리기',
+  accountsLabel: '마음 전하기',
   accountsSub: '축하의 마음을 전해 주세요',
   shareHeadline: 'SAVE_THE_DATE',
-  shareCalendarCta: 'ADD_TO_CALENDAR',
-  shareLinkCta: 'COPY_LINK',
-  shareKakaoCta: 'KAKAO_SHARE',
+  shareCalendarCta: '캘린더 등록',
+  shareLinkCta: '링크 복사',
+  shareKakaoCta: '카카오톡 공유',
   thankYouLabel: 'THANK_YOU',
   thankYouText: '함께해 주셔서 감사합니다'
 };
@@ -164,7 +164,7 @@ function renderCalendar(data) {
   el.innerHTML = html;
 }
 
-const TRANSPORT_LABEL_MAP = { subway: 'SUBWAY', bus: 'BUS', car: 'CAR', walk: 'WALK' };
+const TRANSPORT_LABEL_MAP = { subway: '지하철', bus: '버스', car: '자차', walk: '도보' };
 
 function renderTransport(data) {
   const container = $('[data-bind="transport-list"]');
@@ -226,7 +226,7 @@ function renderContacts(data) {
 
   const groups = [
     {
-      title: 'GROOM_SIDE',
+      title: '신랑측',
       main: { label: groom.name + ' (신랑)', phone: groom.phone },
       parents: [
         { label: formatParentName(groom.father) + ' (아버지)', phone: groom.father?.phone, hidden: groom.father?.deceased },
@@ -234,7 +234,7 @@ function renderContacts(data) {
       ]
     },
     {
-      title: 'BRIDE_SIDE',
+      title: '신부측',
       main: { label: bride.name + ' (신부)', phone: bride.phone },
       parents: [
         { label: formatParentName(bride.father) + ' (아버지)', phone: bride.father?.phone, hidden: bride.father?.deceased },
@@ -276,8 +276,8 @@ function renderAccounts(data) {
   const canCopy = data.features?.accountCopy !== false;
 
   const groups = [
-    { title: 'GROOM', accounts: data.groom.accounts || [] },
-    { title: 'BRIDE', accounts: data.bride.accounts || [] }
+    { title: '신랑', accounts: data.groom.accounts || [] },
+    { title: '신부', accounts: data.bride.accounts || [] }
   ];
 
   container.innerHTML = '';

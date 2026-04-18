@@ -88,7 +88,7 @@ body {
     border: none;
     border-radius: 2px;
     font-family: inherit;
-    font-size: 14px;
+    font-size: 16px;
     cursor: pointer;
 }
 
@@ -105,7 +105,7 @@ body {
     align-items: center;
     justify-content: center;
     color: #81C7C0;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 /* Hero (상단 티켓) */
@@ -129,7 +129,7 @@ body {
 
 .couple-name {
     font-family: var(--font-display);
-    font-size: 28px;
+    font-size: 30px;
     font-weight: 400;
     letter-spacing: var(--track-name);
     color: var(--color-ink);
@@ -138,21 +138,21 @@ body {
 
 .couple-sub {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 0.15em;
     color: var(--color-gray-muted);
     margin-top: 6px;
 }
 
 .couple-heart {
-    width: 28px;
-    height: 28px;
+    width: 36px;
+    height: 36px;
     flex-shrink: 0;
 }
 
 .hero-date {
     font-family: var(--font-mono);
-    font-size: 14px;
+    font-size: 16px;
     letter-spacing: 0.08em;
     color: var(--color-ink);
     margin-bottom: 24px;
@@ -177,7 +177,7 @@ body {
 .dday {
     margin-top: 20px;
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: 15px;
     letter-spacing: 0.1em;
     color: var(--color-mint-dark);
 }
@@ -189,7 +189,7 @@ body {
 }
 
 .greeting-text {
-    font-size: 14px;
+    font-size: 16px;
     line-height: 2;
     color: var(--color-ink);
     margin-bottom: 32px;
@@ -206,7 +206,7 @@ body {
 }
 
 .parents-line {
-    font-size: 13px;
+    font-size: 15px;
     color: var(--color-ink);
     line-height: 1.7;
 }
@@ -224,7 +224,7 @@ body {
 
 .venue-name {
     font-family: var(--font-mono);
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
     letter-spacing: 0.04em;
     color: var(--color-ink-strong);
@@ -233,7 +233,7 @@ body {
 }
 
 .venue-address {
-    font-size: 13px;
+    font-size: 15px;
     color: var(--color-gray-muted);
     line-height: 1.7;
     text-align: center;
@@ -248,7 +248,7 @@ body {
 
 .cal-title {
     font-family: var(--font-mono);
-    font-size: 14px;
+    font-size: 16px;
     letter-spacing: 0.15em;
     margin-bottom: 16px;
     color: var(--color-ink);
@@ -261,11 +261,11 @@ body {
     max-width: 280px;
     margin: 0 auto;
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: 15px;
 }
 
 .cal-head {
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 0.15em;
     color: var(--color-gray-muted);
     padding: 4px 0;
@@ -336,7 +336,7 @@ body {
 
 .transport-item h3 {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 400;
     letter-spacing: var(--track-label);
     text-transform: uppercase;
@@ -345,7 +345,7 @@ body {
 }
 
 .transport-item p {
-    font-size: 14px;
+    font-size: 16px;
     color: var(--color-gray-muted);
     line-height: 1.7;
 }
@@ -366,7 +366,7 @@ body {
     color: var(--color-ink);
     text-decoration: none;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: var(--track-label);
     text-transform: uppercase;
     border-radius: 2px;
@@ -391,7 +391,7 @@ body {
 
 .contact-group h3 {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 400;
     letter-spacing: var(--track-label);
     text-transform: uppercase;
@@ -419,7 +419,7 @@ body {
     padding: 10px 0;
     border-bottom: 1px solid var(--color-gray-line);
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: var(--track-label);
     text-transform: uppercase;
     color: var(--color-gray-muted);
@@ -433,7 +433,7 @@ body {
 }
 
 .contact-parents-toggle .chevron {
-    font-size: 16px;
+    font-size: 18px;
     line-height: 1;
     transition: transform 0.2s ease;
 }
@@ -447,7 +447,7 @@ body {
 }
 
 .contact-label {
-    font-size: 14px;
+    font-size: 16px;
     color: var(--color-ink);
 }
 
@@ -457,22 +457,22 @@ body {
 }
 
 .contact-btn {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     padding: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     background: transparent;
-    border: 1px solid var(--color-ink);
+    border: none;
     color: var(--color-ink);
     text-decoration: none;
     border-radius: 2px;
 }
 
 .contact-btn svg {
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
 }
 
 /* 사진 업로드 링크 */
@@ -483,7 +483,7 @@ body {
 }
 
 .photo-sub {
-    font-size: 13px;
+    font-size: 15px;
     color: var(--color-gray-muted);
     margin-bottom: 24px;
 }
@@ -495,7 +495,7 @@ body {
 }
 
 .account-sub {
-    font-size: 13px;
+    font-size: 15px;
     color: var(--color-gray-muted);
     margin-bottom: 24px;
 }
@@ -518,7 +518,7 @@ body {
     justify-content: space-between;
     padding: 14px 16px;
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 400;
     letter-spacing: var(--track-label);
     text-transform: uppercase;
@@ -534,7 +534,7 @@ body {
 }
 
 .account-toggle .chevron {
-    font-size: 18px;
+    font-size: 20px;
     line-height: 1;
     transition: transform 0.2s ease;
 }
@@ -572,7 +572,7 @@ body {
 
 .account-label {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 12px;
     color: var(--color-gray-muted);
     margin-bottom: 2px;
     letter-spacing: var(--track-label);
@@ -581,14 +581,14 @@ body {
 
 .account-detail {
     font-family: var(--font-mono);
-    font-size: 14px;
+    font-size: 16px;
     color: var(--color-ink);
     font-variant-numeric: tabular-nums;
     word-break: break-all;
 }
 
 .account-holder {
-    font-size: 12px;
+    font-size: 14px;
     color: var(--color-gray-muted);
     margin-top: 2px;
 }
@@ -599,7 +599,7 @@ body {
     border: 1px solid var(--color-ink);
     color: var(--color-ink);
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: var(--track-label);
     text-transform: uppercase;
     border-radius: 2px;
@@ -639,7 +639,7 @@ footer {
 }
 
 .footer-text {
-    font-size: 12px;
+    font-size: 14px;
     color: var(--color-gray-muted);
     letter-spacing: 0.1em;
     margin-top: 12px;
@@ -655,7 +655,7 @@ footer {
     color: #fff;
     padding: 10px 20px;
     border-radius: 20px;
-    font-size: 13px;
+    font-size: 15px;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s, transform 0.2s;
@@ -689,7 +689,7 @@ footer {
     left: 50%;
     transform: translateX(-50%);
     color: rgba(255, 255, 255, 0.75);
-    font-size: 13px;
+    font-size: 15px;
     letter-spacing: 1px;
     z-index: 10;
     pointer-events: none;
@@ -802,7 +802,7 @@ footer {
     left: 50%;
     transform: translateX(-50%);
     color: rgba(255, 255, 255, 0.7);
-    font-size: 12px;
+    font-size: 14px;
     text-align: center;
 }
 
@@ -810,7 +810,7 @@ footer {
 
 .section-label {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: var(--track-label);
     text-transform: uppercase;
     color: var(--color-ink);
@@ -834,7 +834,7 @@ footer {
 
 .rail__text {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 12px;
     color: var(--color-gray-chevron);
     letter-spacing: var(--track-rail);
     white-space: nowrap;
@@ -842,8 +842,8 @@ footer {
 }
 
 @keyframes rail-scroll {
-    from { transform: translateX(-50%); }
-    to   { transform: translateX(0); }
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -851,9 +851,8 @@ footer {
 }
 
 .perforation {
-    position: relative;
     height: 1px;
-    margin: 0 40px;
+    margin: 0;
     background-image: linear-gradient(
         to right,
         var(--color-ink) 0, var(--color-ink) 4px,
@@ -862,21 +861,6 @@ footer {
     background-size: 10px 1px;
     opacity: 0.25;
 }
-
-.perforation::before,
-.perforation::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: var(--color-ink);
-    transform: translateY(-50%);
-}
-
-.perforation::before { left: -8px; }
-.perforation::after  { right: -8px; }
 
 .kv-grid {
     display: grid;
@@ -888,7 +872,7 @@ footer {
 
 .kv-label {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: var(--track-label);
     text-transform: uppercase;
     color: var(--color-gray-muted);
@@ -897,7 +881,7 @@ footer {
 
 .kv-value {
     font-family: var(--font-mono);
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 700;
     letter-spacing: 0.04em;
     color: var(--color-ink-strong);
@@ -909,7 +893,7 @@ footer {
     justify-content: center;
     gap: 8px;
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: 14px;
     letter-spacing: var(--track-label);
     text-transform: uppercase;
     padding: 16px 32px;
@@ -962,7 +946,7 @@ footer {
 .headline-en {
     font-family: var(--font-mono);
     font-weight: 700;
-    font-size: 16px;
+    font-size: 18px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--color-ink-strong);
@@ -972,7 +956,7 @@ footer {
 }
 
 .headline-en.big {
-    font-size: 24px;
+    font-size: 26px;
     letter-spacing: 0.1em;
     margin-bottom: 20px;
 }
