@@ -1,4 +1,5 @@
-import { ensureAuth } from './firebase-config.js';
+import { ensureAuth, db } from './firebase-config.js';
+import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 import { validateFiles, generateThumbnail, uploadAll, getUploadedCount } from './upload.js';
 import { loadPhotos, getPhotoCount, renderGalleryItem, renderBackgroundGallery, Lightbox, INITIAL_PAGE_SIZE, MORE_PAGE_SIZE, escapeHtml } from './gallery.js';
 
@@ -9,6 +10,28 @@ function withTimeout(promise, ms, message = 'Request timed out') {
     timeoutId = setTimeout(() => reject(new Error(message)), ms);
   });
   return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
+}
+
+function formatDateLanding(iso) {
+  const d = new Date(iso);
+  const wd = ['일','월','화','수','목','금','토'][d.getDay()];
+  return `${d.getFullYear()}. ${String(d.getMonth()+1).padStart(2,'0')}. ${String(d.getDate()).padStart(2,'0')}. ${wd}요일`;
+}
+
+function bindInvitation(data) {
+  if (!data) return;
+  const g = data.groom?.name || '';
+  const b = data.bride?.name || '';
+  if (g && b) {
+    document.title = `${g} & ${b} 결혼식`;
+    const names = document.querySelector('[data-bind="couple-names"]');
+    if (names) names.innerHTML = `${g} <span class="heart">&amp;</span> ${b}`;
+  }
+  const dateStr = data.wedding?.date;
+  if (dateStr) {
+    const el = document.querySelector('[data-bind="wedding-date"]');
+    if (el) el.textContent = formatDateLanding(dateStr);
+  }
 }
 
 // === State ===
@@ -119,10 +142,11 @@ async function init() {
   try {
     currentUser = await withTimeout(ensureAuth(), 10_000, 'Auth timed out');
 
-    // 배경 갤러리 + 사진 수를 병렬 로드 (20개 로드하여 갤러리 캐시로도 재사용)
-    const [photosResult, count] = await Promise.all([
+    // 배경 갤러리 + 사진 수 + 청첩장 설정(이름/날짜) 병렬 로드
+    const [photosResult, count, invitationSnap] = await Promise.all([
       withTimeout(loadPhotos(null, INITIAL_PAGE_SIZE), 10_000, 'Photos load timed out'),
-      withTimeout(getPhotoCount(), 5_000, 'Count timed out').catch(() => 0)
+      withTimeout(getPhotoCount(), 5_000, 'Count timed out').catch(() => 0),
+      withTimeout(getDoc(doc(db, 'config', 'invitation')), 5_000, 'Invitation config timed out').catch(() => null)
     ]);
     clearTimeout(slowTimer);
 
@@ -130,6 +154,7 @@ async function init() {
     if (count > 0) {
       photoCount.textContent = `지금까지 ${count}장의 사진이 공유되었습니다`;
     }
+    if (invitationSnap?.exists()) bindInvitation(invitationSnap.data());
 
     // 갤러리 캐시에 저장 + 미리 렌더링 (갤러리 진입 시 즉시 표시)
     galleryItems = photosResult.items;
