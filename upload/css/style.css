@@ -1,4 +1,10 @@
 /* === CSS Variables === */
+@font-face {
+  font-family: 'OCR A';
+  src: url('../../assets/fonts/ocr-a-regular.otf') format('opentype');
+  font-display: swap;
+}
+
 :root {
   --color-bg: #F9FFFE;
   --color-primary: #81D8D0;
@@ -11,7 +17,7 @@
   --color-error: #DA8189;
   --color-white: #FFFFFF;
   --color-border: #B3DDD9;
-  --font-family: 'Orbit', sans-serif;
+  --font-family: 'OCR A', 'Orbit', sans-serif;
   --radius: 12px;
   --radius-sm: 4px;
   --transition: 0.3s ease;
