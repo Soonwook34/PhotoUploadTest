@@ -20,6 +20,7 @@ export class Lightbox {
     this._touchStartX = 0;
     this._touchStartY = 0;
     this._touchMoved = false;
+    this._renderToken = 0;
 
     this._bindEvents();
   }
@@ -104,11 +105,28 @@ export class Lightbox {
   _render() {
     const item = this.items[this.currentIndex];
     if (!item) return;
+    const renderToken = ++this._renderToken;
 
     if (item.contentType && item.contentType.startsWith('video/')) {
       this.contentEl.innerHTML = `<video src="${item.url}" controls controlsList="nodownload" playsinline autoplay></video>`;
     } else {
-      this.contentEl.innerHTML = `<img src="${item.thumbnailUrl || item.url}" alt="" draggable="false">`;
+      const src = item.thumbnailUrl || item.url;
+      const img = new Image();
+      img.alt = '';
+      img.draggable = false;
+      const swap = () => {
+        if (renderToken !== this._renderToken) return;
+        this.contentEl.innerHTML = '';
+        this.contentEl.appendChild(img);
+      };
+      img.onload = swap;
+      img.onerror = swap;
+      img.src = src;
+      if (img.complete && img.naturalWidth > 0) {
+        swap();
+      } else {
+        this.contentEl.innerHTML = '';
+      }
     }
 
     const name = item.uploaderName && item.uploaderName !== 'anonymous'
