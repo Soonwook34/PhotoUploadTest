@@ -31,6 +31,8 @@ const LABELS = {
   shareCalendarCta: '캘린더 등록',
   shareLinkCta: '링크 복사',
   shareKakaoCta: '카카오톡 공유',
+  flowerLabel: '화환 안내',
+  flowerNotice: '따뜻한 마음만 감사히 받겠습니다.\n화환은 정중히 사양합니다.',
   thankYouLabel: 'THANK_YOU',
   thankYouText: '함께해 주셔서 감사합니다'
 };
@@ -410,15 +412,6 @@ function renderShareButtons(data, ogUrl) {
 }
 
 function renderExternalLinks(data) {
-  const flowerBtn = $('[data-bind="flower-delivery"]');
-  if (flowerBtn) {
-    if (data.features?.flowerDelivery && data.externalLinks?.flowerDelivery) {
-      flowerBtn.href = data.externalLinks.flowerDelivery;
-    } else {
-      flowerBtn.closest('section')?.style?.setProperty('display', 'none');
-    }
-  }
-
   const uploadBtn = $('[data-bind="upload-link"]');
   if (uploadBtn) {
     uploadBtn.href = data.externalLinks?.uploadPage || 'upload/';

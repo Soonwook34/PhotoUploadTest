@@ -93,7 +93,7 @@ body {
 
 .loading__text {
     font-family: var(--font-sans);
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
     color: var(--color-mint-dark);
     letter-spacing: 0.08em;
@@ -111,7 +111,7 @@ body {
     border: none;
     border-radius: 2px;
     font-family: inherit;
-    font-size: 16px;
+    font-size: 15px;
     cursor: pointer;
 }
 
@@ -128,26 +128,25 @@ body {
     align-items: center;
     justify-content: center;
     color: #81C7C0;
-    font-size: 16px;
+    font-size: 15px;
 }
 
 /* Hero (상단 티켓) */
 .hero {
-    padding: 40px 32px 32px;
     text-align: center;
 }
 
 .couple {
     display: flex;
-    align-items: center;
-    justify-content: space-around;
-    gap: 12px;
-    margin: 32px 0 16px;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 24px;
+    margin: 24px 0;
 }
 
 .couple-side {
-    flex: 1;
     min-width: 0;
+    text-align: center;
 }
 
 .couple-name {
@@ -172,6 +171,7 @@ body {
 
 .couple-heart {
     flex-shrink: 0;
+    margin-top: 3px;
 }
 
 .hero-date {
@@ -199,7 +199,7 @@ body {
 }
 
 .dday {
-    margin-top: 20px;
+    margin-top: 24px;
     font-family: var(--font-mono);
     font-size: 12px;
     letter-spacing: 0.1em;
@@ -207,16 +207,12 @@ body {
 }
 
 /* 인사말 */
-.greeting {
-    padding: 48px 32px;
-    text-align: center;
-}
 
 .greeting-text {
     font-size: 15px;
     line-height: 2;
     color: var(--color-ink);
-    margin-bottom: 32px;
+    margin-bottom: 24px;
     white-space: pre-line;
 }
 
@@ -248,7 +244,6 @@ body {
 /* 예식 안내 */
 .info {
     background: #fff;
-    padding: 48px 32px;
 }
 
 .venue-name {
@@ -257,7 +252,7 @@ body {
     font-weight: 700;
     letter-spacing: 0.02em;
     color: var(--color-ink-strong);
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     text-align: center;
 }
 
@@ -271,7 +266,7 @@ body {
 
 /* 캘린더 위젯 */
 .calendar-widget {
-    margin-top: 40px;
+    margin-top: 32px;
     text-align: center;
 }
 
@@ -294,7 +289,7 @@ body {
 }
 
 .cal-head {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.15em;
     color: var(--color-gray-muted);
     padding: 4px 0;
@@ -334,7 +329,7 @@ body {
 .gallery-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    gap: 8px;
 }
 
 .gallery-grid img {
@@ -355,7 +350,7 @@ body {
 }
 
 .transport-item {
-    padding: 20px 0;
+    padding: 16px 0;
     border-bottom: 1px solid var(--color-gray-line);
 }
 
@@ -365,11 +360,11 @@ body {
 
 .transport-item h3 {
     font-family: var(--font-sans);
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     letter-spacing: 0.05em;
     color: var(--color-ink-strong);
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -393,7 +388,7 @@ body {
 
 .map-apps {
     display: flex;
-    gap: 8px;
+    gap: 12px;
     justify-content: center;
     margin-top: 16px;
 }
@@ -401,7 +396,7 @@ body {
 .map-btn {
     flex: 1;
     max-width: 100px;
-    padding: 10px 8px;
+    padding: 12px 8px;
     background: #fff;
     border: 1px solid var(--color-gray-line);
     color: var(--color-ink);
@@ -427,9 +422,6 @@ body {
 }
 
 /* 연락처 */
-.contacts-section {
-    padding: 48px 32px;
-}
 
 .contact-group {
     margin-bottom: 24px;
@@ -504,12 +496,12 @@ body {
 
 .contact-actions {
     display: flex;
-    gap: 20px;
+    gap: 12px;
 }
 
 .contact-btn {
-    width: 60px;
-    height: 60px;
+    width: 48px;
+    height: 48px;
     padding: 0;
     display: inline-flex;
     align-items: center;
@@ -522,15 +514,13 @@ body {
 }
 
 .contact-btn svg {
-    width: 40px;
-    height: 40px;
+    width: 28px;
+    height: 28px;
 }
 
 /* 사진 업로드 링크 */
 .photo-link {
     background: #fff;
-    padding: 48px 32px;
-    text-align: center;
 }
 
 .photo-sub {
@@ -540,10 +530,6 @@ body {
 }
 
 /* 계좌 */
-.account {
-    padding: 48px 32px;
-    text-align: center;
-}
 
 .account-sub {
     font-size: 15px;
@@ -567,7 +553,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 16px;
+    padding: 12px 16px;
     font-family: var(--font-sans);
     font-size: 15px;
     font-weight: 500;
@@ -643,7 +629,7 @@ body {
 }
 
 .account-copy {
-    padding: 8px 14px;
+    padding: 8px 12px;
     background: transparent;
     border: 1px solid var(--color-ink);
     color: var(--color-ink);
@@ -660,28 +646,31 @@ body {
 }
 
 /* 공유 */
-.share-section {
-    padding: 48px 32px;
-    text-align: center;
-}
 
 .share-buttons {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     max-width: 300px;
     margin: 0 auto;
 }
 
 /* 화환 */
 .flower-section {
-    padding-top: 0;
     text-align: center;
+}
+
+.flower-notice {
+    font-size: 15px;
+    color: var(--color-gray-muted);
+    line-height: 1.8;
+    white-space: pre-line;
+    margin-top: 12px;
 }
 
 /* 푸터 */
 footer {
-    padding: 56px 32px 32px;
+    padding: 48px 32px;
     text-align: center;
     background: #fff;
 }
@@ -868,7 +857,7 @@ footer {
 
 .rail {
     overflow: hidden;
-    padding: 6px 0;
+    padding: 8px 0;
     border-top: 1px solid var(--color-gray-line);
     border-bottom: 1px solid var(--color-gray-line);
     background: #fff;
@@ -914,7 +903,7 @@ footer {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 24px 12px;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
     text-align: center;
 }
 
@@ -988,7 +977,7 @@ footer {
 .divider {
     height: 1px;
     background: var(--color-ink);
-    margin: 12px 0 24px;
+    margin: 24px 0;
 }
 
 .headline-en {
@@ -998,7 +987,7 @@ footer {
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--color-ink-strong);
-    margin: 16px 0 20px;
+    margin: 20px 0;
     line-height: 1.5;
     text-align: center;
     white-space: pre-line;
@@ -1006,7 +995,7 @@ footer {
 
 .headline-icon {
     display: block;
-    margin: 0 auto 24px;
+    margin: 12px auto 24px;
 }
 
 .cta-icon-above {
