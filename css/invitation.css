@@ -197,6 +197,12 @@ body {
     color: #999 !important;
 }
 
+.info-item > p,
+.address,
+.transport-item p {
+    white-space: pre-line;
+}
+
 /* 갤러리 */
 .gallery-grid {
     display: grid;

@@ -78,10 +78,11 @@ function renderTransport(data) {
   (data.transport || []).forEach((item) => {
     const el = document.createElement('div');
     el.className = 'transport-item';
-    el.innerHTML = `
-      <h3>${item.label}</h3>
-      <p>${item.desc}</p>
-    `;
+    const h3 = document.createElement('h3');
+    h3.textContent = item.label || '';
+    const p = document.createElement('p');
+    p.textContent = item.desc || '';
+    el.append(h3, p);
     container.appendChild(el);
   });
 }
