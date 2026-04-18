@@ -1,0 +1,5 @@
+# Firebase Console 수동 업로드용 로컬 설정 (개인정보 포함)
+firebase/
+
+# OS
+.DS_Store
