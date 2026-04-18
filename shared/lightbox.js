@@ -174,6 +174,8 @@ export class Lightbox {
       }
     }
 
+    this._preloadAdjacent();
+
     if (this.counterEl) {
       if (this.items.length > 1) {
         this.counterEl.textContent = `${this.currentIndex + 1} / ${this.items.length}`;
@@ -199,6 +201,20 @@ export class Lightbox {
       this.currentIndex > 0 ? '' : 'none';
     document.getElementById('lightbox-next').style.display =
       this.currentIndex < this.items.length - 1 ? '' : 'none';
+  }
+
+  _preloadAdjacent() {
+    const preload = (idx) => {
+      if (idx < 0 || idx >= this.items.length) return;
+      const item = this.items[idx];
+      if (!item || item.contentType?.startsWith('video/')) return;
+      const src = item.thumbnailUrl || item.url;
+      if (!src) return;
+      const img = new Image();
+      img.src = src;
+    };
+    preload(this.currentIndex + 1);
+    preload(this.currentIndex - 1);
   }
 }
 
