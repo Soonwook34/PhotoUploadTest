@@ -12,8 +12,9 @@ function withTimeout(promise, ms, message = 'Request timed out') {
   return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
 }
 
-function formatDateLanding(iso) {
-  const d = new Date(iso);
+function formatDateLanding(value) {
+  const d = value?.toDate ? value.toDate() : new Date(value);
+  if (isNaN(d)) return '';
   const wd = ['일','월','화','수','목','금','토'][d.getDay()];
   return `${d.getFullYear()}. ${String(d.getMonth()+1).padStart(2,'0')}. ${String(d.getDate()).padStart(2,'0')}. ${wd}요일`;
 }

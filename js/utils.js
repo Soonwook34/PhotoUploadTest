@@ -3,8 +3,24 @@ import { storage } from './firebase-config.js';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
-export function formatDate(iso) {
-  const d = new Date(iso);
+/** Firestore Timestamp / ISO 문자열 / Date → Date 객체 */
+export function toJsDate(v) {
+  if (!v) return null;
+  if (typeof v.toDate === 'function') return v.toDate();
+  if (v instanceof Date) return v;
+  return new Date(v);
+}
+
+/** Firestore GeoPoint / {lat,lng} → {lat,lng} */
+export function toCoord(v) {
+  if (!v) return null;
+  if (typeof v.latitude === 'number') return { lat: v.latitude, lng: v.longitude };
+  return v;
+}
+
+export function formatDate(value) {
+  const d = toJsDate(value);
+  if (!d) return '';
   const year = d.getFullYear();
   const month = d.getMonth() + 1;
   const date = d.getDate();
@@ -17,13 +33,15 @@ export function formatDate(iso) {
   return `${year}년 ${month}월 ${date}일 ${weekday}요일 ${ampm} ${hour12}시${minutePart}`;
 }
 
-export function formatDateShort(iso) {
-  const d = new Date(iso);
+export function formatDateShort(value) {
+  const d = toJsDate(value);
+  if (!d) return '';
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export function getDday(iso) {
-  const target = new Date(iso);
+export function getDday(value) {
+  const target = toJsDate(value);
+  if (!target) return '';
   const now = new Date();
   target.setHours(0, 0, 0, 0);
   now.setHours(0, 0, 0, 0);
@@ -34,7 +52,7 @@ export function getDday(iso) {
 }
 
 export function generateICS(wedding, title) {
-  const start = new Date(wedding.date);
+  const start = toJsDate(wedding.date);
   const end = new Date(start.getTime() + (wedding.durationMinutes || 90) * 60 * 1000);
   const fmt = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const uid = `wedding-${start.getTime()}@invitation`;
@@ -68,8 +86,8 @@ export function downloadICS(icsText, filename = 'wedding.ics') {
 }
 
 export function buildMapUrl(app, venue) {
-  const { name, address, coord } = venue;
-  const { lat, lng } = coord || {};
+  const { name, address } = venue;
+  const { lat, lng } = toCoord(venue.coord) || {};
   const encodedName = encodeURIComponent(name);
   const encodedAddress = encodeURIComponent(address);
   switch (app) {
