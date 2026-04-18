@@ -14,12 +14,15 @@ export class Lightbox {
     this.el = document.getElementById('lightbox');
     this.contentEl = document.getElementById('lightbox-content');
     this.infoEl = document.getElementById('lightbox-info');
+    this.counterEl = document.getElementById('lightbox-counter');
     this.items = [];
     this.currentIndex = 0;
 
-    this._touchStartX = 0;
-    this._touchStartY = 0;
-    this._touchMoved = false;
+    this._dragStartX = 0;
+    this._dragStartY = 0;
+    this._dragAxis = null;
+    this._dragging = false;
+    this._animating = false;
     this._renderToken = 0;
 
     this._bindEvents();
@@ -42,30 +45,70 @@ export class Lightbox {
     });
 
     this.el.addEventListener('touchstart', (e) => {
+      if (this._animating) return;
+      const img = this.contentEl.querySelector('img');
+      if (!img) return;
       const t = e.changedTouches[0];
-      this._touchStartX = t.clientX;
-      this._touchStartY = t.clientY;
-      this._touchMoved = false;
+      this._dragStartX = t.clientX;
+      this._dragStartY = t.clientY;
+      this._dragAxis = null;
+      this._dragging = true;
+      img.style.transition = 'none';
     }, { passive: true });
 
     this.el.addEventListener('touchmove', (e) => {
+      if (!this._dragging) return;
+      const img = this.contentEl.querySelector('img');
+      if (!img) return;
       const t = e.changedTouches[0];
-      const dx = t.clientX - this._touchStartX;
-      const dy = t.clientY - this._touchStartY;
-      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
-        this._touchMoved = true;
-        e.preventDefault();
+      const dx = t.clientX - this._dragStartX;
+      const dy = t.clientY - this._dragStartY;
+
+      if (this._dragAxis === null) {
+        if (Math.abs(dx) + Math.abs(dy) < 8) return;
+        this._dragAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+      }
+
+      if (this._dragAxis === 'x') {
+        if (e.cancelable) e.preventDefault();
+        img.style.transform = `translateX(${dx}px)`;
+      } else {
+        // vertical gesture — let go of the drag
+        this._dragging = false;
+        img.style.transition = '';
       }
     }, { passive: false });
 
     this.el.addEventListener('touchend', (e) => {
-      if (!this._touchMoved) return;
+      if (!this._dragging) return;
+      this._dragging = false;
+      const img = this.contentEl.querySelector('img');
+      if (!img || this._dragAxis !== 'x') return;
+
       const t = e.changedTouches[0];
-      const dx = t.clientX - this._touchStartX;
-      const dy = t.clientY - this._touchStartY;
-      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
-        if (dx < 0) this.next();
-        else this.prev();
+      const dx = t.clientX - this._dragStartX;
+      const width = window.innerWidth || document.documentElement.clientWidth;
+      const threshold = width * 0.25;
+
+      img.style.transition = 'transform 0.2s ease-out';
+
+      const direction = dx < 0 ? -1 : 1;
+      const canMove =
+        (direction === -1 && this.currentIndex < this.items.length - 1) ||
+        (direction === 1 && this.currentIndex > 0);
+
+      if (Math.abs(dx) > threshold && canMove) {
+        this._animating = true;
+        const onEnd = () => {
+          img.removeEventListener('transitionend', onEnd);
+          this._animating = false;
+          if (direction === -1) this.next();
+          else this.prev();
+        };
+        img.addEventListener('transitionend', onEnd);
+        img.style.transform = `translateX(${direction * width}px)`;
+      } else {
+        img.style.transform = '';
       }
     }, { passive: true });
   }
@@ -114,6 +157,8 @@ export class Lightbox {
       const img = new Image();
       img.alt = '';
       img.draggable = false;
+      img.style.transition = 'none';
+      img.style.transform = '';
       const swap = () => {
         if (renderToken !== this._renderToken) return;
         this.contentEl.innerHTML = '';
@@ -126,6 +171,15 @@ export class Lightbox {
         swap();
       } else {
         this.contentEl.innerHTML = '';
+      }
+    }
+
+    if (this.counterEl) {
+      if (this.items.length > 1) {
+        this.counterEl.textContent = `${this.currentIndex + 1} / ${this.items.length}`;
+        this.counterEl.style.display = '';
+      } else {
+        this.counterEl.style.display = 'none';
       }
     }
 

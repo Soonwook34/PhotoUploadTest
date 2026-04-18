@@ -817,7 +817,19 @@ body {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
-  touch-action: pan-y;
+  touch-action: none;
+}
+
+.lightbox-counter {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
+  letter-spacing: 1px;
+  z-index: 10;
+  pointer-events: none;
 }
 
 .lightbox.active {
@@ -891,6 +903,7 @@ body {
   -webkit-user-select: none;
   user-select: none;
   pointer-events: none;
+  will-change: transform;
 }
 
 .lightbox-content video {
