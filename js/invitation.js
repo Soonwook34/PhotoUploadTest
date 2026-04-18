@@ -16,7 +16,7 @@ let lightbox = null;
 const $ = (sel) => document.querySelector(sel);
 
 const LABELS = {
-  heroLabel: 'WEDDING PASS',
+  heroLabel: 'WEDDING_PASS',
   greetingLabel: '인사말',
   greetingHeadline: 'READY FOR\nTAKEOFF AS ONE',
   eventDetailsLabel: '예식 안내',
@@ -28,6 +28,7 @@ const LABELS = {
   uploadCta: '사진 올리기',
   accountsLabel: '마음 전하기',
   accountsSub: '축하의 마음을 전해 주세요',
+  shareLabel: '공유하기',
   shareHeadline: 'SAVE_THE_DATE',
   shareCalendarCta: '캘린더 등록',
   shareLinkCta: '링크 복사',
