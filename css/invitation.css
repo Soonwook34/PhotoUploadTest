@@ -812,6 +812,30 @@ footer {
     text-align: center;
 }
 
+.rail {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--color-gray-chevron);
+    letter-spacing: var(--track-rail);
+    padding: 12px 24px;
+    border-top: 1px solid var(--color-gray-line);
+    border-bottom: 1px solid var(--color-gray-line);
+    white-space: nowrap;
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+}
+
+.perforation {
+    height: 2px;
+    margin: 0 32px;
+    background-image: radial-gradient(circle, currentColor 1px, transparent 1.5px);
+    background-size: 8px 2px;
+    background-repeat: repeat-x;
+    color: var(--color-gray-chevron);
+    opacity: 0.6;
+}
+
 .kv-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;

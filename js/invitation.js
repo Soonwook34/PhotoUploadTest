@@ -43,6 +43,22 @@ function renderLabels(data) {
   });
 }
 
+function renderRails(data) {
+  const { wedding, groom, bride } = data;
+  const d = toJsDate(wedding.date);
+  if (!d) return;
+  const ymd = `${d.getFullYear()}_${String(d.getMonth() + 1).padStart(2, '0')}_${String(d.getDate()).padStart(2, '0')}`;
+  const parts = [
+    '>>>>>>', 'WEDDING_PASS', '>>>>',
+    `FLIGHT_${ymd}`, '>>>>',
+    `${(groom.nameEn || '').toUpperCase()}_AND_${(bride.nameEn || '').toUpperCase()}`,
+    '>>>>>>'
+  ];
+  const txt = parts.join(' ');
+  document.querySelectorAll('[data-bind="rail-top"], [data-bind="rail-bottom"]')
+    .forEach((el) => { el.textContent = txt; });
+}
+
 function formatParentName(parent) {
   if (!parent || !parent.name) return '';
   return parent.deceased ? `故 ${parent.name}` : parent.name;
@@ -470,6 +486,7 @@ async function init() {
 
     toggleSections(data);
     renderLabels(data);
+    renderRails(data);
     renderHero(data, heroUrl);
     renderDday(data);
     renderGreeting(data);
