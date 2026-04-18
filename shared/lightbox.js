@@ -1,13 +1,15 @@
 /**
  * 공용 Lightbox 클래스 — 청첩장(/) + 업로드(/upload/) 페이지 공유.
  *
+ * 구조: 스트립(strip) 캐러셀 — 모든 아이템을 한 줄에 슬라이드로 배치하고
+ * 트랙 전체를 translateX 로 이동. 스와이프 시 옆 사진이 실시간으로 보이며,
+ * 다음 사진이 이미 DOM에 있으므로 로드 공백이 없음.
+ *
+ * 성능: `_loadAround` 로 현재 인덱스 ±2 범위만 실제 src 세팅(지연 로딩).
+ *
  * DOM 요구사항: 호출 페이지에 다음 요소가 있어야 함
  *   #lightbox, #lightbox-close, #lightbox-prev, #lightbox-next,
- *   #lightbox-content, #lightbox-info
- *
- * item 형태(모두 선택):
- *   { url, thumbnailUrl?, contentType?, uploaderName?, takenAt?, createdAt? }
- *   contentType 가 'video/*' 이면 <video>, 그 외는 <img> 로 렌더.
+ *   #lightbox-content, #lightbox-info, #lightbox-counter
  */
 export class Lightbox {
   constructor() {
@@ -17,13 +19,12 @@ export class Lightbox {
     this.counterEl = document.getElementById('lightbox-counter');
     this.items = [];
     this.currentIndex = 0;
+    this.track = null;
 
     this._dragStartX = 0;
     this._dragStartY = 0;
     this._dragAxis = null;
     this._dragging = false;
-    this._animating = false;
-    this._renderToken = 0;
 
     this._bindEvents();
   }
@@ -45,21 +46,17 @@ export class Lightbox {
     });
 
     this.el.addEventListener('touchstart', (e) => {
-      if (this._animating) return;
-      const img = this.contentEl.querySelector('img');
-      if (!img) return;
+      if (!this.track) return;
       const t = e.changedTouches[0];
       this._dragStartX = t.clientX;
       this._dragStartY = t.clientY;
       this._dragAxis = null;
       this._dragging = true;
-      img.style.transition = 'none';
+      this.track.style.transition = 'none';
     }, { passive: true });
 
     this.el.addEventListener('touchmove', (e) => {
-      if (!this._dragging) return;
-      const img = this.contentEl.querySelector('img');
-      if (!img) return;
+      if (!this._dragging || !this.track) return;
       const t = e.changedTouches[0];
       const dx = t.clientX - this._dragStartX;
       const dy = t.clientY - this._dragStartY;
@@ -71,44 +68,44 @@ export class Lightbox {
 
       if (this._dragAxis === 'x') {
         if (e.cancelable) e.preventDefault();
-        img.style.transform = `translateX(${dx}px)`;
+        let offset = dx;
+        if ((this.currentIndex === 0 && dx > 0) ||
+            (this.currentIndex === this.items.length - 1 && dx < 0)) {
+          offset = dx / 3;
+        }
+        this.track.style.transform =
+          `translateX(calc(${-this.currentIndex * 100}vw + ${offset}px))`;
       } else {
-        // vertical gesture — let go of the drag
         this._dragging = false;
-        img.style.transition = '';
+        this._setPosition(this.currentIndex, true);
       }
     }, { passive: false });
 
     this.el.addEventListener('touchend', (e) => {
       if (!this._dragging) return;
       this._dragging = false;
-      const img = this.contentEl.querySelector('img');
-      if (!img || this._dragAxis !== 'x') return;
+      if (this._dragAxis !== 'x') return;
 
       const t = e.changedTouches[0];
       const dx = t.clientX - this._dragStartX;
       const width = window.innerWidth || document.documentElement.clientWidth;
-      const threshold = width * 0.25;
+      const threshold = width * 0.2;
 
-      img.style.transition = 'transform 0.2s ease-out';
+      let newIndex = this.currentIndex;
+      if (dx < -threshold && this.currentIndex < this.items.length - 1) {
+        newIndex = this.currentIndex + 1;
+      } else if (dx > threshold && this.currentIndex > 0) {
+        newIndex = this.currentIndex - 1;
+      }
 
-      const direction = dx < 0 ? -1 : 1;
-      const canMove =
-        (direction === -1 && this.currentIndex < this.items.length - 1) ||
-        (direction === 1 && this.currentIndex > 0);
-
-      if (Math.abs(dx) > threshold && canMove) {
-        this._animating = true;
-        const onEnd = () => {
-          img.removeEventListener('transitionend', onEnd);
-          this._animating = false;
-          if (direction === -1) this.next();
-          else this.prev();
-        };
-        img.addEventListener('transitionend', onEnd);
-        img.style.transform = `translateX(${direction * width}px)`;
+      if (newIndex !== this.currentIndex) {
+        this.currentIndex = newIndex;
+        this._setPosition(this.currentIndex, true);
+        this._loadAround(this.currentIndex);
+        this._updateOverlays();
+        this._syncVideos();
       } else {
-        img.style.transform = '';
+        this._setPosition(this.currentIndex, true);
       }
     }, { passive: true });
   }
@@ -116,7 +113,11 @@ export class Lightbox {
   open(items, index) {
     this.items = items;
     this.currentIndex = index;
-    this._render();
+    this._buildTrack();
+    this._setPosition(this.currentIndex, false);
+    this._loadAround(this.currentIndex);
+    this._updateOverlays();
+    this._syncVideos();
     this.el.hidden = false;
     requestAnimationFrame(() => this.el.classList.add('active'));
     document.body.style.overflow = 'hidden';
@@ -127,6 +128,8 @@ export class Lightbox {
     setTimeout(() => {
       this.el.hidden = true;
       this.contentEl.innerHTML = '';
+      this.track = null;
+      this.items = [];
     }, 300);
     document.body.style.overflow = '';
   }
@@ -134,48 +137,71 @@ export class Lightbox {
   prev() {
     if (this.currentIndex > 0) {
       this.currentIndex--;
-      this._render();
+      this._setPosition(this.currentIndex, true);
+      this._loadAround(this.currentIndex);
+      this._updateOverlays();
+      this._syncVideos();
     }
   }
 
   next() {
     if (this.currentIndex < this.items.length - 1) {
       this.currentIndex++;
-      this._render();
+      this._setPosition(this.currentIndex, true);
+      this._loadAround(this.currentIndex);
+      this._updateOverlays();
+      this._syncVideos();
     }
   }
 
-  _render() {
-    const item = this.items[this.currentIndex];
-    if (!item) return;
-    const renderToken = ++this._renderToken;
+  _buildTrack() {
+    this.contentEl.innerHTML = '';
+    const track = document.createElement('div');
+    track.className = 'lightbox-track';
+    this.items.forEach((_, i) => {
+      const slide = document.createElement('div');
+      slide.className = 'lightbox-slide';
+      slide.dataset.index = String(i);
+      track.appendChild(slide);
+    });
+    this.contentEl.appendChild(track);
+    this.track = track;
+  }
 
-    if (item.contentType && item.contentType.startsWith('video/')) {
-      this.contentEl.innerHTML = `<video src="${item.url}" controls controlsList="nodownload" playsinline autoplay></video>`;
-    } else {
-      const src = item.thumbnailUrl || item.url;
-      const img = new Image();
-      img.alt = '';
-      img.draggable = false;
-      img.style.transition = 'none';
-      img.style.transform = '';
-      const swap = () => {
-        if (renderToken !== this._renderToken) return;
-        this.contentEl.innerHTML = '';
-        this.contentEl.appendChild(img);
-      };
-      img.onload = swap;
-      img.onerror = swap;
-      img.src = src;
-      if (img.complete && img.naturalWidth > 0) {
-        swap();
+  _loadAround(index) {
+    if (!this.track) return;
+    const range = 2;
+    const from = Math.max(0, index - range);
+    const to = Math.min(this.items.length - 1, index + range);
+    for (let i = from; i <= to; i++) {
+      const slide = this.track.children[i];
+      if (!slide || slide.childElementCount > 0) continue;
+      const item = this.items[i];
+      if (!item) continue;
+      if (item.contentType?.startsWith('video/')) {
+        const v = document.createElement('video');
+        v.src = item.url;
+        v.controls = true;
+        v.controlsList = 'nodownload';
+        v.playsInline = true;
+        slide.appendChild(v);
       } else {
-        this.contentEl.innerHTML = '';
+        const img = document.createElement('img');
+        img.alt = '';
+        img.draggable = false;
+        img.src = item.thumbnailUrl || item.url;
+        slide.appendChild(img);
       }
     }
+  }
 
-    this._preloadAdjacent();
+  _setPosition(index, animate) {
+    if (!this.track) return;
+    this.track.style.transition = animate ? 'transform 0.25s ease-out' : 'none';
+    this.track.style.transform = `translateX(-${index * 100}vw)`;
+  }
 
+  _updateOverlays() {
     if (this.counterEl) {
       if (this.items.length > 1) {
         this.counterEl.textContent = `${this.currentIndex + 1} / ${this.items.length}`;
@@ -185,17 +211,19 @@ export class Lightbox {
       }
     }
 
-    const name = item.uploaderName && item.uploaderName !== 'anonymous'
-      ? item.uploaderName : '';
-    const date = item.takenAt?.toDate
-      ? formatShortDate(item.takenAt.toDate())
-      : item.createdAt?.toDate
-        ? formatShortDate(item.createdAt.toDate())
-        : '';
-
-    const info = [name, date].filter(Boolean).join(' · ');
-    this.infoEl.textContent = info;
-    this.infoEl.style.display = info ? '' : 'none';
+    const item = this.items[this.currentIndex];
+    if (this.infoEl) {
+      const name = item?.uploaderName && item.uploaderName !== 'anonymous'
+        ? item.uploaderName : '';
+      const date = item?.takenAt?.toDate
+        ? formatShortDate(item.takenAt.toDate())
+        : item?.createdAt?.toDate
+          ? formatShortDate(item.createdAt.toDate())
+          : '';
+      const info = [name, date].filter(Boolean).join(' · ');
+      this.infoEl.textContent = info;
+      this.infoEl.style.display = info ? '' : 'none';
+    }
 
     document.getElementById('lightbox-prev').style.display =
       this.currentIndex > 0 ? '' : 'none';
@@ -203,18 +231,17 @@ export class Lightbox {
       this.currentIndex < this.items.length - 1 ? '' : 'none';
   }
 
-  _preloadAdjacent() {
-    const preload = (idx) => {
-      if (idx < 0 || idx >= this.items.length) return;
-      const item = this.items[idx];
-      if (!item || item.contentType?.startsWith('video/')) return;
-      const src = item.thumbnailUrl || item.url;
-      if (!src) return;
-      const img = new Image();
-      img.src = src;
-    };
-    preload(this.currentIndex + 1);
-    preload(this.currentIndex - 1);
+  _syncVideos() {
+    if (!this.track) return;
+    Array.from(this.track.children).forEach((slide, i) => {
+      const v = slide.querySelector('video');
+      if (!v) return;
+      if (i === this.currentIndex) {
+        v.play().catch(() => {});
+      } else {
+        v.pause();
+      }
+    });
   }
 }
 

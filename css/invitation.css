@@ -656,32 +656,50 @@ footer {
 }
 
 .lightbox-content {
-    max-width: 90vw;
-    max-height: 85vh;
+    width: 100vw;
+    height: 85vh;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.lightbox-track {
+    display: flex;
+    height: 100%;
+    will-change: transform;
+    pointer-events: none;
+}
+
+.lightbox-slide {
+    flex: 0 0 100vw;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0 5vw;
+    box-sizing: border-box;
+    pointer-events: none;
 }
 
-.lightbox-content img {
+.lightbox-slide img {
     max-width: 100%;
-    max-height: 85vh;
+    max-height: 100%;
     object-fit: contain;
     border-radius: 4px;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
-    pointer-events: none;
-    will-change: transform;
+    pointer-events: auto;
+    -webkit-user-drag: none;
 }
 
-.lightbox-content video {
+.lightbox-slide video {
     max-width: 100%;
-    max-height: 85vh;
+    max-height: 100%;
     border-radius: 4px;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
+    pointer-events: auto;
 }
 
 .lightbox-info {
