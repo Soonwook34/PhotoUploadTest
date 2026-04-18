@@ -353,21 +353,52 @@ body {
 }
 
 .account-group {
-    margin-bottom: 24px;
+    margin-bottom: 12px;
     text-align: left;
+    border: 1px solid #E8F5F2;
+    border-radius: 2px;
+    overflow: hidden;
 }
 
 .account-group:last-child {
     margin-bottom: 0;
 }
 
-.account-group h3 {
+.account-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
     font-size: 13px;
     font-weight: 400;
     letter-spacing: 2px;
     color: #81C7C0;
-    margin-bottom: 12px;
-    text-align: center;
+    cursor: pointer;
+    list-style: none;
+    background: #F9FFFE;
+    user-select: none;
+}
+
+.account-toggle::-webkit-details-marker {
+    display: none;
+}
+
+.account-toggle .chevron {
+    font-size: 18px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+
+.account-group[open] .account-toggle {
+    border-bottom: 1px solid #E8F5F2;
+}
+
+.account-group[open] .chevron {
+    transform: rotate(90deg);
+}
+
+.account-rows {
+    padding: 0 16px;
 }
 
 .account-row {

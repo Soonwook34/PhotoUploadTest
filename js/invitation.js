@@ -161,11 +161,16 @@ function renderAccounts(data) {
   container.innerHTML = '';
   groups.forEach((group) => {
     if (group.accounts.length === 0) return;
-    const wrapper = document.createElement('div');
-    wrapper.className = 'account-group';
-    const title = document.createElement('h3');
-    title.textContent = group.title;
-    wrapper.appendChild(title);
+    const details = document.createElement('details');
+    details.className = 'account-group';
+
+    const summary = document.createElement('summary');
+    summary.className = 'account-toggle';
+    summary.innerHTML = `<span>${group.title}</span><span class="chevron">›</span>`;
+    details.appendChild(summary);
+
+    const rows = document.createElement('div');
+    rows.className = 'account-rows';
 
     group.accounts.forEach((acc) => {
       const row = document.createElement('div');
@@ -184,9 +189,11 @@ function renderAccounts(data) {
           showToast(ok ? '계좌번호가 복사되었습니다' : '복사에 실패했습니다');
         });
       }
-      wrapper.appendChild(row);
+      rows.appendChild(row);
     });
-    container.appendChild(wrapper);
+
+    details.appendChild(rows);
+    container.appendChild(details);
   });
 }
 
