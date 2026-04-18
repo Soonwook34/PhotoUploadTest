@@ -38,7 +38,7 @@
                     <h1 class="couple-name" data-bind="groom-name">&nbsp;</h1>
                     <p class="couple-sub" data-bind="groom-sub"></p>
                 </div>
-                <span class="couple-heart icon-inline icon-mint" data-icon="heart" aria-hidden="true" style="width:64px;height:64px;"></span>
+                <span class="couple-heart icon-inline icon-mint" data-icon="heart" aria-hidden="true" style="width:36px;height:36px;"></span>
                 <div class="couple-side">
                     <h1 class="couple-name" data-bind="bride-name">&nbsp;</h1>
                     <p class="couple-sub" data-bind="bride-sub"></p>
@@ -61,14 +61,8 @@
             <span class="icon-inline icon-ink headline-icon" data-icon="flight-takeoff" style="width:40px;height:40px;"></span>
             <p class="greeting-text" data-bind="greeting-body"></p>
             <div class="parents-grid">
-                <div>
-                    <p class="kv-label">신랑 혼주</p>
-                    <p class="parents-line" data-bind="groom-parents"></p>
-                </div>
-                <div>
-                    <p class="kv-label">신부 혼주</p>
-                    <p class="parents-line" data-bind="bride-parents"></p>
-                </div>
+                <p class="parents-line" data-bind="groom-parents"></p>
+                <p class="parents-line" data-bind="bride-parents"></p>
             </div>
         </section>
 
@@ -115,6 +109,8 @@
             <div class="contacts" data-bind="contacts"></div>
         </section>
 
+        <div class="perforation"></div>
+
         <section class="section photo-link">
             <p class="section-label" data-bind-label="uploadLabel"></p>
             <p class="photo-sub" data-bind-label="uploadSub"></p>
@@ -123,6 +119,8 @@
                 <span data-bind-label="uploadCta"></span>
             </a>
         </section>
+
+        <div class="perforation"></div>
 
         <section class="section account" data-section="accounts">
             <p class="section-label" data-bind-label="accountsLabel"></p>

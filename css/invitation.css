@@ -162,9 +162,12 @@ body {
 .couple-sub {
     font-family: var(--font-mono);
     font-size: 12px;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.08em;
     color: var(--color-gray-muted);
     margin-top: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .couple-heart {
@@ -222,10 +225,10 @@ body {
     flex-direction: column;
     border-top: 1px solid var(--color-ink);
     padding-top: 20px;
-    text-align: left;
+    text-align: center;
 }
 
-.parents-grid > div + div {
+.parents-grid > p + p {
     margin-top: 20px;
     padding-top: 20px;
     border-top: 1px solid var(--color-gray-line);
@@ -998,6 +1001,7 @@ footer {
     margin: 16px 0 20px;
     line-height: 1.5;
     text-align: center;
+    white-space: pre-line;
 }
 
 .headline-icon {
@@ -1007,7 +1011,7 @@ footer {
 
 .cta-icon-above {
     display: block;
-    margin: 0 auto 16px;
+    margin: 0 auto 24px;
 }
 
 .mint-panel {

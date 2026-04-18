@@ -17,7 +17,7 @@ const $ = (sel) => document.querySelector(sel);
 const LABELS = {
   heroLabel: 'WEDDING PASS',
   greetingLabel: '인사말',
-  greetingHeadline: 'READY FOR TAKEOFF AS ONE',
+  greetingHeadline: 'READY FOR\nTAKEOFF AS ONE',
   eventDetailsLabel: '예식 안내',
   storyLabel: '우리의 이야기',
   directionsLabel: '오시는 길',
