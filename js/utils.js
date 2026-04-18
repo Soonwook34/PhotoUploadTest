@@ -54,18 +54,6 @@ export function formatDateMono(value) {
   return `${yy}·${mm}·${dd}  ·  ${wd}  ·  ${time}`;
 }
 
-export function getDday(value) {
-  const target = toJsDate(value);
-  if (!target) return '';
-  const now = new Date();
-  target.setHours(0, 0, 0, 0);
-  now.setHours(0, 0, 0, 0);
-  const diff = Math.round((target - now) / (1000 * 60 * 60 * 24));
-  if (diff > 0) return `D-${diff}`;
-  if (diff < 0) return `D+${Math.abs(diff)}`;
-  return 'D-DAY';
-}
-
 function icsEscape(s) {
   return String(s || '')
     .replace(/\\/g, '\\\\')

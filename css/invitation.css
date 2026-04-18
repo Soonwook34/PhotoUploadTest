@@ -71,8 +71,8 @@ body {
     position: relative;
     width: 60%;
     max-width: 260px;
-    height: 40px;
-    overflow: hidden;
+    height: 80px;
+    overflow: visible;
 }
 
 .loading__plane {
@@ -86,9 +86,9 @@ body {
 }
 
 @keyframes plane-takeoff {
-    0%   { left: -40px; transform: translate(0, -50%) rotate(-10deg); opacity: 0; }
+    0%   { left: -40px; transform: translate(0, -50%) rotate(80deg);  opacity: 0; }
     15%  { opacity: 1; }
-    100% { left: 100%;  transform: translate(0, -180%) rotate(25deg); opacity: 1; }
+    100% { left: 100%;  transform: translate(0, -180%) rotate(115deg); opacity: 1; }
 }
 
 .loading__text {
@@ -198,14 +198,6 @@ body {
     background-color: transparent;
 }
 
-.dday {
-    margin-top: 24px;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    color: var(--color-mint-dark);
-}
-
 /* 인사말 */
 
 .greeting-text {
@@ -304,6 +296,10 @@ body {
 .cal-day {
     padding: 6px 0;
     color: var(--color-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
 }
 
 .cal-day.empty { color: transparent; }
@@ -315,9 +311,6 @@ body {
     width: 32px;
     height: 32px;
     margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     font-weight: 700;
 }
 
@@ -1006,3 +999,81 @@ footer {
 .mint-panel {
     background: var(--color-mint-bg);
 }
+
+/* ===== 공항 전광판 스플릿 플랩 ===== */
+.flipboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.flipboard__row {
+    display: flex;
+    gap: 2px;
+    justify-content: center;
+}
+
+.flap {
+    position: relative;
+    display: inline-block;
+    width: 22px;
+    height: 32px;
+    background: var(--color-ink-strong);
+    color: var(--color-mint);
+    font-family: var(--font-mono);
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 32px;
+    border-radius: 2px;
+    overflow: hidden;
+    perspective: 100px;
+}
+
+.flap__char {
+    display: block;
+    transform-origin: center center;
+    backface-visibility: hidden;
+}
+
+.flap::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.12);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.flap--flipping .flap__char {
+    animation: flap-flip 0.3s ease-in-out;
+}
+
+@keyframes flap-flip {
+    0%   { transform: rotateX(0); }
+    50%  { transform: rotateX(-90deg); }
+    100% { transform: rotateX(0); }
+}
+
+.flap--spacer {
+    background: transparent;
+    width: 8px;
+}
+
+.flap--label,
+.flap--sep {
+    background: transparent;
+    color: var(--color-ink-strong);
+    width: auto;
+    min-width: 10px;
+    padding: 0 2px;
+}
+
+.flap--sep::after,
+.flap--label::after,
+.flap--spacer::after { display: none; }

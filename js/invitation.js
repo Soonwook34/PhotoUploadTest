@@ -1,7 +1,7 @@
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 import { db } from './firebase-config.js';
 import {
-  formatDateMono, getDday,
+  formatDateMono,
   toJsDate,
   generateICS, downloadICS,
   buildMapUrl, copyToClipboard, showToast,
@@ -9,6 +9,7 @@ import {
 } from './utils.js';
 import { Lightbox } from '../shared/lightbox.js';
 import { hydrateIcons } from './icons.js';
+import { startFlipboard } from './flipboard.js';
 
 let lightbox = null;
 
@@ -346,14 +347,18 @@ function renderGallery(urls) {
   });
 }
 
-function renderDday(data) {
-  const el = $('[data-bind="dday"]');
+function renderCountdown(data) {
+  const el = $('[data-bind="countdown"]');
   if (!el) return;
   if (!data.features?.countdown) {
     el.style.display = 'none';
     return;
   }
-  el.textContent = getDday(data.wedding.date);
+  const target = toJsDate(data.wedding.date);
+  if (!target) return;
+  const g = (data.groom.initialsEn || data.groom.nameEn?.slice(0, 2) || 'A').toUpperCase();
+  const b = (data.bride.initialsEn || data.bride.nameEn?.slice(0, 2) || 'B').toUpperCase();
+  startFlipboard(el, { target, title: `${g} ♥ ${b}` });
 }
 
 function renderShareButtons(data, ogUrl) {
@@ -490,7 +495,7 @@ async function init() {
     renderLabels();
     renderRails(data);
     renderHero(data, heroUrl);
-    renderDday(data);
+    renderCountdown(data);
     renderGreeting(data);
     renderWeddingInfo(data);
     renderCalendar(data);
