@@ -1,6 +1,8 @@
 # Firebase 설정 가이드
 
-결혼식 사진 업로드 웹앱을 위한 Firebase 설정 방법입니다.
+결혼식 청첩장 + 사진 업로드 웹앱을 위한 **최초 Firebase 설정 가이드**입니다.
+
+> 최초 세팅 이후 규칙을 업데이트하거나 새 기능을 켤 때는 [FIREBASE_RULES_UPDATE.md](FIREBASE_RULES_UPDATE.md) 를 참조하세요.
 
 ---
 
@@ -72,29 +74,18 @@ const firebaseConfig = {
 4. 위치 선택: **`asia-northeast3 (서울)`**
 5. **"프로덕션 모드에서 시작"** 선택 → **"만들기"**
 6. 생성 완료 후 **"규칙"** 탭 클릭
-7. 기존 내용을 **전부 지우고** 아래 내용을 붙여넣기:
-
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /photos/{photoId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update, delete: if false;
-    }
-  }
-}
-```
-
+7. 기존 내용을 **전부 지우고** [FIREBASE_RULES_UPDATE.md의 섹션 1](FIREBASE_RULES_UPDATE.md#1-firestore-rules-최신-버전) 규칙을 붙여넣기
 8. **"게시"** 클릭
 
-### 규칙 설명
-| 규칙 | 의미 |
-|------|------|
-| `allow read: if true` | 누구나 사진 목록 조회 가능 |
-| `allow create: if request.auth != null` | 인증된 사용자만 새 문서 생성 가능 |
-| `allow update, delete: if false` | 수정/삭제 불가 (데이터 보호) |
+### 컬렉션 요약
+| 컬렉션 | 용도 | Read | Write |
+|--------|------|------|-------|
+| `photos` | 하객 업로드 사진 메타데이터 | public | 익명 인증 사용자 |
+| `config` | 청첩장 개인정보 (이름/주소/계좌 등) | public | Console에서만 |
+| `rsvp` | 참석 여부 응답 (추후) | 금지 | 익명 인증 + 검증 |
+| `guestbook` | 방명록 (추후) | public | 익명 인증 + 검증 |
+
+> 상세 규칙은 [FIREBASE_RULES_UPDATE.md](FIREBASE_RULES_UPDATE.md) 참조
 
 ---
 
@@ -105,40 +96,17 @@ service cloud.firestore {
 3. **"프로덕션 모드에서 시작"** → **"다음"**
 4. 위치는 자동 설정됨 → **"완료"**
 5. **"Rules"** (규칙) 탭 클릭
-6. 기존 내용을 **전부 지우고** 아래 내용을 붙여넣기:
-
-```
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /uploads/{uid}/{fileName} {
-      allow read: if true;
-      allow write: if request.auth != null
-        && request.auth.uid == uid
-        && request.resource.size < 1073741824
-        && request.resource.contentType.matches('image/.*|video/.*');
-    }
-    match /thumbnails/{uid}/{fileName} {
-      allow read: if true;
-      allow write: if request.auth != null
-        && request.auth.uid == uid
-        && request.resource.size < 1048576
-        && request.resource.contentType == 'image/jpeg';
-    }
-  }
-}
-```
-
+6. 기존 내용을 **전부 지우고** [FIREBASE_RULES_UPDATE.md의 섹션 2](FIREBASE_RULES_UPDATE.md#2-storage-rules-최신-버전) 규칙을 붙여넣기
 7. **"게시"** 클릭
 
-### 규칙 설명
-| 규칙 | 의미 |
-|------|------|
-| `allow read: if true` | 누구나 파일 열람 가능 |
-| `request.auth.uid == uid` | 본인 폴더에만 업로드 가능 |
-| uploads: `size < 1073741824` | 원본 파일 1GB 제한 |
-| thumbnails: `size < 1048576` | 썸네일 1MB 제한, JPEG만 |
-| `contentType.matches('image/.*\|video/.*')` | 이미지/동영상만 허용 |
+### 폴더 구조 요약
+```
+/invitation/        # 청첩장 이미지 (hero.jpg, og.jpg, gallery/*) - public read only
+/uploads/{uid}/     # 하객 업로드 원본
+/thumbnails/{uid}/  # 하객 업로드 썸네일
+```
+
+> 상세 규약과 파일명 규칙은 [FIREBASE_RULES_UPDATE.md 섹션 3](FIREBASE_RULES_UPDATE.md#3-storage-폴더-구조-규약) 참조
 
 ---
 
@@ -175,7 +143,11 @@ service firebase.storage {
 
 ## 8. 프로젝트에 config 값 입력
 
-`js/firebase-config.js` 파일을 열고 `YOUR_` 부분을 2단계에서 복사한 값으로 교체:
+Firebase config는 **두 군데**에서 사용합니다 (둘 다 동일한 값):
+- `js/firebase-config.js` (청첩장 메인 페이지)
+- `upload/js/firebase-config.js` (사진 업로드 앱)
+
+각 파일을 열고 `YOUR_` 부분을 2단계에서 복사한 값으로 교체:
 
 ```javascript
 const firebaseConfig = {
@@ -192,6 +164,29 @@ const firebaseConfig = {
 
 ---
 
+## 9. 청첩장 초기 데이터 입력
+
+### Firestore에 `config/invitation` 문서 생성
+
+> 실제 값을 담은 로컬 템플릿 JSON은 `firebase/invitation.json` 에 있습니다. 이 파일은 `.gitignore` 로 git에서 제외되며, 자세한 워크플로우는 [firebase/README.md](firebase/README.md) 참조.
+
+1. Firebase Console > **Firestore Database** > **데이터** 탭
+2. **컬렉션 시작** 클릭 → 컬렉션 ID: `config`
+3. 문서 ID: `invitation` (자동 ID 해제, 직접 입력)
+4. `firebase/invitation.json` 의 값을 참고하여 필드 입력 (스키마 설명은 [FIREBASE_RULES_UPDATE.md 섹션 4](FIREBASE_RULES_UPDATE.md#4-firestore-컬렉션문서-구조))
+5. **저장**
+
+### Storage에 청첩장 이미지 업로드
+
+1. Firebase Console > **Storage**
+2. **폴더 만들기** → `invitation`
+3. `invitation` 폴더 진입 후 아래 파일 업로드:
+   - `hero.jpg` (메인 커버)
+   - `og.jpg` (공유 썸네일, 선택)
+4. `invitation/gallery/` 하위 폴더 만든 후 갤러리 사진 업로드 (`01.jpg`, `02.jpg` 식)
+
+---
+
 ## 설정 완료 체크리스트
 
 - [ ] Firebase 프로젝트 생성됨
@@ -201,4 +196,6 @@ const firebaseConfig = {
 - [ ] Storage 활성화 및 규칙 배포됨
 - [ ] Blaze 플랜 업그레이드됨
 - [ ] GitHub Pages 도메인 승인됨
-- [ ] `js/firebase-config.js`에 config 값 입력됨
+- [ ] `js/firebase-config.js`, `upload/js/firebase-config.js` 에 config 값 입력됨
+- [ ] Firestore `config/invitation` 문서 생성 및 데이터 입력됨
+- [ ] Storage `invitation/` 폴더에 이미지 업로드됨

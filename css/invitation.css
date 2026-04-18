@@ -1,0 +1,506 @@
+/* 모바일 청첩장 스타일 - Tiffany 테마 */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Orbit', sans-serif;
+    background: #F9FFFE;
+    color: #2D2D2D;
+    -webkit-font-smoothing: antialiased;
+}
+
+.invitation {
+    max-width: 480px;
+    margin: 0 auto;
+    background: #fff;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.invitation.loaded {
+    opacity: 1;
+}
+
+/* 로딩 */
+.loading {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F9FFFE;
+    z-index: 100;
+}
+
+.shimmer {
+    width: 60%;
+    max-width: 320px;
+    height: 4px;
+    background: linear-gradient(90deg, #E8F5F2 0%, #B8E0DB 50%, #E8F5F2 100%);
+    background-size: 200% 100%;
+    border-radius: 2px;
+    animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.btn-retry {
+    margin-top: 16px;
+    padding: 10px 24px;
+    background: #81C7C0;
+    color: #fff;
+    border: none;
+    border-radius: 2px;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* 섹션 공통 */
+.section {
+    padding: 60px 32px;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #81C7C0;
+    margin-bottom: 24px;
+}
+
+.placeholder {
+    background: #F2FCFB;
+    border: 2px dashed #B8E0DB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #81C7C0;
+    font-size: 14px;
+}
+
+/* 메인 비주얼 */
+.hero {
+    padding-top: 80px;
+    padding-bottom: 40px;
+}
+
+.hero .label {
+    font-size: 12px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: #81C7C0;
+    margin-bottom: 32px;
+}
+
+.hero .names {
+    font-size: 28px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.hero .amp {
+    display: block;
+    font-size: 18px;
+    color: #81C7C0;
+    margin: 4px 0;
+}
+
+.hero .date {
+    font-size: 14px;
+    color: #888;
+    letter-spacing: 1px;
+    margin-bottom: 40px;
+}
+
+.hero-image {
+    width: calc(100% + 64px);
+    margin: 0 -32px;
+    height: 460px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.hero-image.loaded {
+    border: none;
+    background-color: transparent;
+}
+
+.dday {
+    margin-top: 24px;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: #81C7C0;
+}
+
+/* 인사말 */
+.greeting {
+    background: #F9FFFE;
+}
+
+.greeting-text {
+    font-size: 15px;
+    line-height: 2;
+    color: #555;
+    margin-bottom: 32px;
+    white-space: pre-line;
+}
+
+.parents p {
+    font-size: 14px;
+    color: #666;
+    line-height: 2;
+}
+
+.parents strong {
+    color: #2D2D2D;
+    margin-left: 4px;
+}
+
+/* 예식 안내 */
+.info-item {
+    margin-bottom: 24px;
+}
+
+.info-item:last-child {
+    margin-bottom: 0;
+}
+
+.info-item h3 {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: #81C7C0;
+    margin-bottom: 8px;
+}
+
+.info-item p {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.8;
+}
+
+.address {
+    font-size: 13px !important;
+    color: #999 !important;
+}
+
+/* 갤러리 */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+
+.gallery-grid img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    background: #F2FCFB;
+}
+
+/* 오시는 길 */
+.location {
+    background: #F9FFFE;
+}
+
+.transport-list {
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.transport-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #E8F5F2;
+}
+
+.transport-item:last-child {
+    border-bottom: none;
+}
+
+.transport-item h3 {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: #81C7C0;
+    margin-bottom: 4px;
+}
+
+.transport-item p {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+}
+
+.map-apps {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 16px;
+}
+
+.map-btn {
+    flex: 1;
+    max-width: 120px;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #B8E0DB;
+    color: #2D2D2D;
+    text-decoration: none;
+    font-family: inherit;
+    font-size: 13px;
+    border-radius: 2px;
+    text-align: center;
+}
+
+/* 연락처 */
+.contact-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.contact-group:last-child {
+    margin-bottom: 0;
+}
+
+.contact-group h3 {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: #81C7C0;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.contact-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #F2FCFB;
+}
+
+.contact-row:last-child {
+    border-bottom: none;
+}
+
+.contact-label {
+    font-size: 14px;
+    color: #555;
+}
+
+.contact-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.contact-btn {
+    padding: 6px 14px;
+    background: #fff;
+    border: 1px solid #B8E0DB;
+    color: #2D2D2D;
+    text-decoration: none;
+    font-family: inherit;
+    font-size: 12px;
+    border-radius: 2px;
+}
+
+/* 사진 업로드 링크 */
+.photo-link {
+    background: #F9FFFE;
+}
+
+.photo-link p {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 24px;
+}
+
+.btn-upload {
+    display: inline-block;
+    padding: 14px 48px;
+    background: #81C7C0;
+    color: #fff;
+    text-decoration: none;
+    font-family: 'Orbit', sans-serif;
+    font-size: 15px;
+    letter-spacing: 2px;
+    border-radius: 2px;
+    transition: background 0.2s;
+}
+
+.btn-upload:active {
+    background: #6BB8B0;
+}
+
+/* 계좌 */
+.account > p {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 32px;
+}
+
+.account-group {
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.account-group:last-child {
+    margin-bottom: 0;
+}
+
+.account-group h3 {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: #81C7C0;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.account-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #F2FCFB;
+    gap: 12px;
+}
+
+.account-row:last-child {
+    border-bottom: none;
+}
+
+.account-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.account-label {
+    font-size: 12px;
+    color: #81C7C0;
+    margin-bottom: 2px;
+    letter-spacing: 1px;
+}
+
+.account-detail {
+    font-size: 14px;
+    color: #2D2D2D;
+    font-variant-numeric: tabular-nums;
+    word-break: break-all;
+}
+
+.account-holder {
+    font-size: 12px;
+    color: #999;
+    margin-top: 2px;
+}
+
+.account-copy {
+    padding: 8px 14px;
+    background: #fff;
+    border: 1px solid #B8E0DB;
+    color: #2D2D2D;
+    font-family: inherit;
+    font-size: 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.account-copy:active {
+    background: #F2FCFB;
+}
+
+/* 공유 */
+.share-section {
+    background: #F9FFFE;
+}
+
+.share-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 280px;
+    margin: 0 auto;
+}
+
+.share-btn {
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #B8E0DB;
+    color: #2D2D2D;
+    font-family: inherit;
+    font-size: 14px;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.share-btn:active {
+    background: #F2FCFB;
+}
+
+/* 화환 */
+.flower-section {
+    padding-top: 0;
+}
+
+.btn-outline {
+    display: inline-block;
+    padding: 12px 40px;
+    background: #fff;
+    border: 1px solid #81C7C0;
+    color: #81C7C0;
+    text-decoration: none;
+    font-family: inherit;
+    font-size: 14px;
+    letter-spacing: 1px;
+    border-radius: 2px;
+}
+
+/* 푸터 */
+footer {
+    padding: 48px 32px;
+    text-align: center;
+}
+
+.footer-text {
+    font-size: 13px;
+    color: #bbb;
+    letter-spacing: 4px;
+}
+
+/* 토스트 */
+.toast {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(45, 45, 45, 0.9);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 200;
+    white-space: nowrap;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}

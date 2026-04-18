@@ -1,6 +1,6 @@
-# 결혼식 사진 업로드 웹앱
+# 결혼식 웹앱 (모바일 청첩장 + 사진 업로드)
 
-결혼식 하객들이 모바일로 접속하여 사진과 동영상을 업로드하고, 공유된 사진을 갤러리로 볼 수 있는 웹 페이지입니다.
+모바일 청첩장과 하객 사진/영상 업로드 갤러리가 결합된 결혼식 웹앱입니다.
 
 **Live**: (비공개)
 
@@ -34,17 +34,34 @@
 ## 프로젝트 구조
 
 ```
-├── index.html              # SPA 메인 페이지 (랜딩/업로드/갤러리)
+├── index.html                    # 모바일 청첩장 메인 페이지
 ├── css/
-│   └── style.css           # 모바일 우선 웨딩 테마 스타일
+│   └── invitation.css            # 청첩장 스타일
 ├── js/
-│   ├── firebase-config.js  # Firebase 초기화 및 인증
-│   ├── upload.js           # 파일 검증, 썸네일 생성, 업로드 큐
-│   ├── gallery.js          # Firestore 조회, 갤러리 렌더링, 라이트박스
-│   └── app.js              # 화면 전환, UI 상태 관리
-├── FIREBASE_SETUP.md       # Firebase 설정 가이드
+│   ├── firebase-config.js        # Firebase 초기화 (청첩장용)
+│   ├── utils.js                  # 포맷/공유/복사/이미지 로드 유틸
+│   └── invitation.js             # Firestore 데이터 fetch & DOM 바인딩
+├── upload/                       # 사진 업로드 앱 (서브 경로)
+│   ├── index.html                # SPA 메인 페이지 (랜딩/업로드/갤러리)
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       ├── firebase-config.js    # Firebase 초기화 및 익명 인증
+│       ├── upload.js
+│       ├── gallery.js
+│       └── app.js
+├── FIREBASE_SETUP.md             # Firebase 최초 설정 가이드
+├── FIREBASE_RULES_UPDATE.md      # Rules/Storage 구조 업데이트 가이드
 └── README.md
 ```
+
+## 개인정보 관리 (청첩장 + 업로드 페이지)
+
+**모든 개인정보(이름/날짜/계좌/주소/전화번호)는 GitHub에 커밋하지 않고 Firestore에 저장**합니다. 청첩장 메인 페이지와 업로드 페이지(`/upload/`) 모두 같은 `config/invitation` 문서를 읽어 이름/날짜를 채웁니다.
+- 텍스트 데이터: Firestore `config/invitation` 문서 (Firebase Console에서 편집)
+- 이미지: Firebase Storage `/invitation/` 폴더 (hero.jpg, og.jpg, gallery/*)
+- 로컬 편집용 템플릿: `firebase/invitation.json` (`.gitignore` 로 git 제외)
+- 자세한 구조 및 편집 방법은 [firebase/README.md](firebase/README.md) / [FIREBASE_RULES_UPDATE.md](FIREBASE_RULES_UPDATE.md) 참조
 
 ---
 
@@ -58,7 +75,7 @@ Firebase 프로젝트를 처음 만드는 경우, 아래 가이드를 따라 설
 
 ### 2. Config 값 입력
 
-Firebase 설정 완료 후, `js/firebase-config.js` 파일의 `YOUR_` 부분을 실제 값으로 교체합니다:
+Firebase 설정 완료 후, `upload/js/firebase-config.js` 파일의 `YOUR_` 부분을 실제 값으로 교체합니다:
 
 ```javascript
 const firebaseConfig = {

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#F2FCFB">
+    <title>모바일 청첩장</title>
+    <meta property="og:type" content="website">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbit&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/invitation.css">
+</head>
+<body>
+
+    <div id="loading" class="loading">
+        <div class="shimmer"></div>
+    </div>
+
+    <div class="invitation">
+
+        <section class="section hero">
+            <p class="label">Wedding Invitation</p>
+            <h1 class="names" data-bind="couple-names">&nbsp;</h1>
+            <p class="date" data-bind="wedding-date">&nbsp;</p>
+            <div class="hero-image placeholder" data-bind="hero-image">
+                <span>사진을 준비 중입니다</span>
+            </div>
+            <div class="dday" data-section="countdown" data-bind="dday"></div>
+        </section>
+
+        <section class="section greeting">
+            <h2 class="section-title" data-bind="greeting-title">초대합니다</h2>
+            <p class="greeting-text" data-bind="greeting-body"></p>
+            <div class="parents">
+                <p data-bind="groom-parents"></p>
+                <p data-bind="bride-parents"></p>
+            </div>
+        </section>
+
+        <section class="section info">
+            <h2 class="section-title">예식 안내</h2>
+            <div class="info-item">
+                <h3>일시</h3>
+                <p data-bind="info-date"></p>
+            </div>
+            <div class="info-item">
+                <h3>장소</h3>
+                <p data-bind="info-venue"></p>
+                <p class="address" data-bind="info-address"></p>
+                <p style="display:none;"><a data-bind="venue-tel"></a></p>
+            </div>
+        </section>
+
+        <section class="section gallery-section" data-section="gallery">
+            <h2 class="section-title">우리의 이야기</h2>
+            <div class="gallery-grid" data-bind="gallery"></div>
+        </section>
+
+        <section class="section location">
+            <h2 class="section-title">오시는 길</h2>
+            <div class="transport-list" data-bind="transport-list"></div>
+            <div class="map-apps" data-section="map-apps" data-bind="map-apps"></div>
+        </section>
+
+        <section class="section contacts-section">
+            <h2 class="section-title">연락하기</h2>
+            <div class="contacts" data-bind="contacts"></div>
+        </section>
+
+        <section class="section photo-link">
+            <h2 class="section-title">우리의 순간을 함께</h2>
+            <p>소중한 사진과 영상을 공유해 주세요</p>
+            <a data-bind="upload-link" href="upload/" class="btn-upload">사진 올리기</a>
+        </section>
+
+        <section class="section account" data-section="accounts">
+            <h2 class="section-title">마음 전하기</h2>
+            <p>축하의 마음을 전해 주세요</p>
+            <div class="accounts" data-bind="accounts"></div>
+        </section>
+
+        <section class="section share-section">
+            <h2 class="section-title">청첩장 공유</h2>
+            <div class="share-buttons">
+                <button type="button" class="share-btn" data-bind="share-calendar">캘린더 등록</button>
+                <button type="button" class="share-btn" data-bind="share-link">링크 복사</button>
+                <button type="button" class="share-btn" data-bind="share-kakao" style="display:none;">카카오톡 공유</button>
+            </div>
+        </section>
+
+        <section class="section flower-section">
+            <a data-bind="flower-delivery" class="btn-outline" target="_blank" rel="noopener">화환 보내기</a>
+        </section>
+
+        <footer>
+            <p class="footer-text">감사합니다</p>
+        </footer>
+
+    </div>
+
+    <script type="module" src="js/invitation.js"></script>
+</body>
+</html>
