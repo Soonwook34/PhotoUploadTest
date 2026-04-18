@@ -4,7 +4,7 @@ import {
   formatDate, formatDateShort, getDday,
   generateICS, downloadICS,
   buildMapUrl, copyToClipboard, showToast,
-  loadInvitationImage, loadGalleryImages
+  loadInvitationImageFallback, loadGalleryImages
 } from './utils.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -323,8 +323,8 @@ async function init() {
     const data = snap.data();
 
     const [heroUrl, ogUrl, galleryUrls] = await Promise.all([
-      loadInvitationImage('invitation/hero.jpg'),
-      loadInvitationImage('invitation/og.jpg'),
+      loadInvitationImageFallback('invitation/hero'),
+      loadInvitationImageFallback('invitation/og'),
       loadGalleryImages()
     ]);
 

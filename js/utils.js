@@ -148,6 +148,15 @@ export async function loadInvitationImage(path) {
   }
 }
 
+/** basePath 에 확장자들을 순차 시도하여 첫 성공 URL 반환. 예: loadInvitationImageFallback('invitation/hero') */
+export async function loadInvitationImageFallback(basePath, exts = ['jpg', 'jpeg', 'png', 'webp']) {
+  for (const ext of exts) {
+    const url = await loadInvitationImage(`${basePath}.${ext}`);
+    if (url) return url;
+  }
+  return null;
+}
+
 export async function loadGalleryImages() {
   try {
     const folderRef = ref(storage, 'invitation/gallery');
