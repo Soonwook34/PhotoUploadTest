@@ -52,6 +52,7 @@
 │       └── app.js
 ├── FIREBASE_SETUP.md             # Firebase 최초 설정 가이드
 ├── FIREBASE_RULES_UPDATE.md      # Rules/Storage 구조 업데이트 가이드
+├── KAKAO_SETUP.md                # 카카오톡 공유(JS 키 발급 등) 설정 가이드
 └── README.md
 ```
 
