@@ -257,7 +257,7 @@ function renderDday(data) {
   el.textContent = getDday(data.wedding.date);
 }
 
-function renderShareButtons(data) {
+function renderShareButtons(data, ogUrl) {
   const { features, share, wedding } = data;
 
   const linkBtn = $('[data-bind="share-link"]');
@@ -286,9 +286,29 @@ function renderShareButtons(data) {
 
   const kakaoBtn = $('[data-bind="share-kakao"]');
   if (kakaoBtn) {
-    // Kakao SDK 연동은 features.kakaoShare + Kakao JS 키 세팅 시 활성화
-    // 현재는 버튼 숨김 (추후 확장 지점)
-    kakaoBtn.style.display = features?.kakaoShare ? '' : 'none';
+    const canKakao = !!features?.kakaoShare && !!window.Kakao?.isInitialized?.();
+    if (canKakao) {
+      kakaoBtn.style.display = '';
+      kakaoBtn.addEventListener('click', () => {
+        try {
+          const content = {
+            title: share.title || '결혼식 청첩장',
+            description: share.description || '',
+            link: {
+              mobileWebUrl: share.url || location.href,
+              webUrl: share.url || location.href
+            }
+          };
+          if (ogUrl) content.imageUrl = ogUrl;
+          window.Kakao.Share.sendDefault({ objectType: 'feed', content });
+        } catch (e) {
+          console.error('Kakao share failed:', e);
+          showToast('카카오 공유에 실패했습니다');
+        }
+      });
+    } else {
+      kakaoBtn.style.display = 'none';
+    }
   }
 }
 
@@ -368,6 +388,14 @@ async function init() {
       loadGalleryImages()
     ]);
 
+    if (data.share?.kakaoJsKey && window.Kakao && !window.Kakao.isInitialized()) {
+      try {
+        window.Kakao.init(data.share.kakaoJsKey);
+      } catch (e) {
+        console.warn('Kakao init failed:', e);
+      }
+    }
+
     toggleSections(data);
     renderHero(data, heroUrl);
     renderDday(data);
@@ -378,7 +406,7 @@ async function init() {
     renderContacts(data);
     renderAccounts(data);
     renderGallery(galleryUrls);
-    renderShareButtons(data);
+    renderShareButtons(data, ogUrl);
     renderExternalLinks(data);
     injectOGTags(data, ogUrl);
 
