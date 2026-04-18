@@ -53,3 +53,4 @@
 - **GitHub Pages로 무료 호스팅**: main 브랜치 root에서 배포
 - **push 후 반영까지 1~3분 소요**: GitHub Actions 배포 상태 확인
 - **변경사항은 README.md, FIREBASE_SETUP.md에도 반영**: 업로드 크기 제한, 기능 변경 시 문서 업데이트
+- **커밋 메시지 규약**: Conventional Commits 스타일 태그로 시작 (`feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `style:`, `test:`, `perf:` 등). 제목은 간결한 한국어/영문 혼용 가능, 범위(scope) 사용은 선택.
