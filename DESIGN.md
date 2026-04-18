@@ -63,6 +63,9 @@
 
 실물 시안은 **3 family** 를 조합함.
 
+> **전역 폰트 스택 (이미 적용됨)**: `font-family: 'OCR A', 'Orbit', sans-serif;`
+> 브라우저의 per-glyph 폴백으로 **라틴·숫자는 OCR-A**, **한글은 Orbit** 이 자동 선택됨. 별도 `lang` 분기나 DOM 분리 불필요. 개별 요소 CSS 에서도 기본적으로 이 스택을 상속하므로, 특별히 한글/영문 고정이 필요한 경우에만 명시적으로 덮어쓰면 됨.
+
 ### A. 모노스페이스 (OCR-A / ticker 폰트)
 가장 강한 정체성. 티켓 스터브·번호·라벨·날짜 표시에 사용.
 
@@ -106,13 +109,14 @@
 /* 렌더링 시 이름 글자 사이 공백을 직접 넣거나 text-indent 기법 사용 */
 ```
 
-### C. 영문 산세리프 (헤드라인)
+### C. 영문 헤드라인 (OCR-A 굵게)
 - "READY FOR TAKEOFF AS ONE :)", "JOIN US FOR OUR FIRST FLIGHT!", "SAVE THE DATE!"
-- 볼드체, 상당히 **조밀한 tracking** (모노 대비 밀도 있는 가로)
+- 전역 스택이 OCR-A 이므로 헤드라인도 OCR-A 톤을 자연스럽게 계승
+- 크기 업 + letter-spacing 약간으로 강조
 
 ```css
 .headline-en {
-    font-family: 'Orbit', 'Helvetica Neue', Arial, sans-serif;
+    /* 전역 font-family 스택 상속 (OCR A → Orbit → sans-serif) */
     font-weight: 700;
     font-size: 18px;
     letter-spacing: 0.08em;
@@ -135,28 +139,69 @@
 
 ## 4. 아이콘/그래픽
 
-### 업로드된 SVG 세트
+### 업로드된 SVG 세트 (모두 `fill="currentColor"` 로 통일됨)
 | 파일 | 시안 상 용도 |
 |------|-------------|
 | [assets/icons/heart.svg](assets/icons/heart.svg) | 커플 이름 사이 민트 하트, 캘린더의 결혼일 마커 |
 | [assets/icons/plane.svg](assets/icons/plane.svg) | 하단 패널 "FIRST FLIGHT!" 아래 비행기 아이콘 |
 | [assets/icons/flight-takeoff.svg](assets/icons/flight-takeoff.svg) | 이륙 모션이 담긴 변형 — 전환 효과·상단 장식 후보 |
 | [assets/icons/engagement-ring.svg](assets/icons/engagement-ring.svg) | 반지 아이콘 — 특별 섹션(예: "Our Story", "언약") 강조 |
+| [assets/icons/stamp.svg](assets/icons/stamp.svg) | `SAVE_THE_DATE` · "CHECK-IN" 느낌의 도장 포인트 |
 
-### 색상 제어
-SVG 는 `fill="currentColor"` 로 내보내 CSS 의 `color` 값으로 색 변경 가능하게 할 것. 없다면 수동 `fill` 지정.
+### 색상 제어 — CSS `color` 로 다룰 수 있는 3가지 방법
 
+모든 SVG 는 `fill="currentColor"` 를 쓰지만, **브라우저가 SVG 내부까지 `color` 를 전달하느냐** 는 삽입 방식에 따라 다름.
+
+#### 방법 1. `<img>` (외부 리소스) — `color` 전달 안 됨
+```html
+<img src="assets/icons/heart.svg" class="icon">
+```
+→ SVG 는 sandbox 처리되어 부모 CSS `color` 를 못 받음. **기본 검정** 으로 렌더. 색 변경 불가.
+→ 색이 필요 없거나 이미 결정된 경우에만 사용.
+
+#### 방법 2. 인라인 SVG — `color` 상속 O (**권장 for 작은 아이콘**)
+HTML 에 `<svg>` 태그 자체를 직접 삽입 → `color` 가 `currentColor` 로 내려감.
+```html
+<span class="icon icon-mint">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="..." fill="currentColor"/>
+    </svg>
+</span>
+```
 ```css
-.icon {
+.icon      { width: 24px; height: 24px; display: inline-flex; }
+.icon-mint { color: var(--color-mint); }
+.icon-ink  { color: var(--color-ink); }
+```
+→ `color: var(--color-mint)` 만 붙이면 하트가 민트색.
+
+JS 로 fetch 해 삽입해도 되고, 자주 쓰는 아이콘은 HTML 템플릿에 직접 박아둬도 됨.
+
+#### 방법 3. CSS `mask` (외부 파일 유지 + 색 제어) — **권장 for 반복 요소**
+SVG 를 마스크로 쓰고 배경색을 직접 지정:
+```html
+<span class="icon mask-heart icon-mint"></span>
+```
+```css
+.mask-heart {
+    -webkit-mask: url('../assets/icons/heart.svg') no-repeat center / contain;
+            mask: url('../assets/icons/heart.svg') no-repeat center / contain;
     width: 24px;
     height: 24px;
-    color: var(--color-mint);
+    display: inline-block;
 }
+.icon-mint { background-color: var(--color-mint); }
+.icon-ink  { background-color: var(--color-ink); }
 ```
+→ 파일 재사용 가능, CSS 로 색 자유롭게 제어. iOS 14+, 모든 모던 데스크톱 브라우저 지원.
 
-```html
-<img src="assets/icons/heart.svg" class="icon" alt="">
-```
+### 결정 가이드
+| 상황 | 추천 방법 |
+|------|-----------|
+| 검정/고정 색 한 번만 | 1. `<img>` |
+| 동적으로 색 바뀜 (hover, 섹션별 톤 차이, JS 토글) | 2. 인라인 SVG 또는 3. CSS mask |
+| 크기 작고 자주 재사용 (heart, plane) | 2. 인라인 SVG |
+| 큰/복잡한 SVG, 여러 장소 재사용 | 3. CSS mask |
 
 ---
 
@@ -427,15 +472,125 @@ SVG 는 `fill="currentColor"` 로 내보내 CSS 의 `color` 값으로 색 변경
 
 ### 이미 있음
 - [x] OCR-A 폰트 (`assets/fonts/ocr-a-regular.otf`)
-- [x] heart, plane, flight-takeoff, engagement-ring SVG
+- [x] heart, plane, flight-takeoff, engagement-ring, **stamp** SVG (모두 `currentColor`)
 - [x] favicon 세트 (`assets/icons/favicon/`)
 - [x] Tiffany 계열 팔레트 기 반영 (`#81C7C0`, `#B8E0DB`, `#F2FCFB`)
 
 ### 추가로 준비하면 좋은 것
-- [ ] **hero 배경 이미지** (실물 티켓 느낌의 뉴트럴 배경) — Storage `/invitation/hero.jpeg` 에 아날로그 톤 사진
-- [ ] **체크-인 도장** SVG (`stamp.svg`) — "SAVE THE DATE" 근처 포인트
-- [ ] **perforation 점선** SVG 또는 CSS 패턴 — 패널 간 분리
-- [ ] **웨딩 홀 로고/약도 SVG** — `VENUE` 섹션 시각화
+- [ ] **hero 배경 이미지** → 10-A 스펙 참조
+- [ ] **perforation 점선 패턴** → 10-B 스펙 참조 (SVG 파일 or CSS)
+- [ ] **웨딩 홀 로고/약도 SVG** — `VENUE` 섹션 시각화 (선택)
+
+---
+
+### 10-A. Hero 배경 이미지 스펙
+
+실물 티켓의 시각 정체성에 어울리는 배경. 커플 사진 또는 여행/하늘 계열 연출 사진이 "First Flight" 메타포와 맞음.
+
+| 항목 | 권장값 | 비고 |
+|------|--------|------|
+| 주제 | 커플 사진 · 하늘/구름 · 공항/창문 | 인물 얼굴 강조는 과한 연출로 피하기 |
+| 방향 | **세로 (portrait)** | 모바일 세로 화면 기준 |
+| 비율 | **3:4** (권장) 또는 **4:5** | 티켓 상단 느낌엔 3:4가 적합 |
+| 해상도 | **1600 × 2000 px** | retina 2x 까지 커버 (480 CSS px × 2.5 ≈ 1200, 여유 있게 1600) |
+| 파일 크기 | **≤ 400 KB** | 품질 80~85 JPEG / quality 75 WebP |
+| 포맷 | **`.jpeg`** (호환성) 또는 **`.webp`** (30% 작음) | 코드는 둘 다 fallback 처리됨 |
+| 톤/채도 | **낮은 채도, 톤 단조로움** | 텍스트 오버레이 가능한 여유 영역 확보 |
+| 색온도 | 약간 따뜻한 민트/베이지 계열 | Tiffany 팔레트와 조화 |
+| 업로드 경로 | **Firebase Storage `/invitation/hero.jpeg`** | [js/utils.js `loadInvitationImageFallback`](js/utils.js#L163-L186) 가 자동 매칭 |
+
+**리사이즈 도구**: macOS 미리보기(도구 → 크기 조정) / [squoosh.app](https://squoosh.app/) / ImageMagick `mogrify -resize 1600x2000 -quality 82 *.jpg`
+
+**CSS 적용 예시** (티파니 톤 오버레이 + cover):
+```css
+.hero-image {
+    background-image:
+        linear-gradient(
+            rgba(249, 255, 254, 0.15),
+            rgba(129, 199, 192, 0.25)
+        ),
+        url('https://firebasestorage.googleapis.com/.../hero.jpeg');
+    background-size: cover;
+    background-position: center;
+    aspect-ratio: 3 / 4;
+}
+```
+
+**텍스트 가독성 팁**: 사진 위에 이름이 올라가면 `text-shadow: 0 1px 2px rgba(0,0,0,0.15)` 또는 반투명 흰 카드(`background: rgba(255,255,255,0.7); backdrop-filter: blur(8px);`) 사용.
+
+---
+
+### 10-B. Perforation 점선 패턴 스펙
+
+티켓 간 분리 · 본권/스터브 사이 · 섹션 구분선에 사용.
+
+두 가지 선택지 — **CSS 방식(B-2)** 이 추가 파일 없이 색 제어까지 되어 권장.
+
+#### B-1. SVG 파일 방식 (`assets/icons/perforation.svg`)
+작성 시 아래 형태 권장 — 길이 자유롭게 tile 됨:
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 2" preserveAspectRatio="none">
+    <circle cx="1"  cy="1" r="1" fill="currentColor"/>
+    <circle cx="11" cy="1" r="1" fill="currentColor"/>
+</svg>
+```
+- viewBox 20×2 에 점 2개 (반복 단위)
+- `fill="currentColor"` 로 CSS 색 제어 (인라인 SVG 시) 또는 CSS mask 사용
+
+```css
+.perforation {
+    height: 2px;
+    background-color: var(--color-gray-chevron);
+    -webkit-mask: url('../assets/icons/perforation.svg') repeat-x center / 10px 2px;
+            mask: url('../assets/icons/perforation.svg') repeat-x center / 10px 2px;
+}
+```
+
+#### B-2. 순수 CSS 방식 (**권장**, 파일 불필요)
+```css
+.perforation {
+    height: 2px;
+    background-image: radial-gradient(circle, currentColor 1px, transparent 1.5px);
+    background-size: 8px 2px;
+    background-repeat: repeat-x;
+    color: var(--color-gray-chevron);
+    opacity: 0.7;
+}
+```
+- 점 크기: 1px 반경 (지름 2px)
+- 점 간격: 8px
+- 전체 높이: 2px
+
+**섹션 분리 예시**:
+```html
+<section class="ticket-top">...</section>
+<div class="perforation"></div>
+<section class="ticket-bottom">...</section>
+```
+
+#### B-3. 티켓 끝 반원 컷아웃 (옵션, 실제 항공권 표현)
+좌·우 끝에 배경색과 같은 원으로 "파임" 효과:
+
+```css
+.ticket {
+    position: relative;
+    --notch-size: 14px;
+}
+.ticket::before, .ticket::after {
+    content: '';
+    position: absolute;
+    width: var(--notch-size);
+    height: var(--notch-size);
+    border-radius: 50%;
+    background: var(--color-bg);  /* 페이지 배경색 */
+    top: 50%;
+    transform: translateY(-50%);
+}
+.ticket::before { left:  calc(var(--notch-size) / -2); }
+.ticket::after  { right: calc(var(--notch-size) / -2); }
+```
+→ `.perforation` 과 같이 사용하면 실물 항공권 모서리 마감 완성.
 
 ---
 
