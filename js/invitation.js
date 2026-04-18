@@ -275,7 +275,7 @@ function renderShareButtons(data) {
   if (calBtn) {
     if (features?.addToCalendar) {
       calBtn.addEventListener('click', () => {
-        const ics = generateICS(wedding, share.title || '결혼식');
+        const ics = generateICS(wedding, share.title || '결혼식', share.url);
         downloadICS(ics, 'wedding.ics');
       });
     } else {

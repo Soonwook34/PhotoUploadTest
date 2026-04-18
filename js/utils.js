@@ -51,13 +51,21 @@ export function getDday(value) {
   return 'D-DAY';
 }
 
-export function generateICS(wedding, title) {
+function icsEscape(s) {
+  return String(s || '')
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\n/g, '\\n');
+}
+
+export function generateICS(wedding, title, url) {
   const start = toJsDate(wedding.date);
   const end = new Date(start.getTime() + (wedding.durationMinutes || 90) * 60 * 1000);
   const fmt = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const uid = `wedding-${start.getTime()}@invitation`;
   const location = [wedding.venue.name, wedding.venue.hall, wedding.venue.address].filter(Boolean).join(' ');
-  return [
+  const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//Wedding Invitation//KO',
@@ -66,11 +74,15 @@ export function generateICS(wedding, title) {
     `DTSTAMP:${fmt(new Date())}`,
     `DTSTART:${fmt(start)}`,
     `DTEND:${fmt(end)}`,
-    `SUMMARY:${title}`,
-    `LOCATION:${location}`,
-    'END:VEVENT',
-    'END:VCALENDAR'
-  ].join('\r\n');
+    `SUMMARY:${icsEscape(title)}`,
+    `LOCATION:${icsEscape(location)}`
+  ];
+  if (url) {
+    lines.push(`DESCRIPTION:${icsEscape(`청첩장: ${url}`)}`);
+    lines.push(`URL:${url}`);
+  }
+  lines.push('END:VEVENT', 'END:VCALENDAR');
+  return lines.join('\r\n');
 }
 
 export function downloadICS(icsText, filename = 'wedding.ics') {
