@@ -1,17 +1,47 @@
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 import { db } from './firebase-config.js';
 import {
-  formatDate, formatDateShort, getDday,
+  formatDateMono, getDday,
+  toJsDate,
   generateICS, downloadICS,
   buildMapUrl, copyToClipboard, showToast,
   loadInvitationImageFallback, loadGalleryImages
 } from './utils.js';
 import { Lightbox } from '../shared/lightbox.js';
+import { hydrateIcons } from './icons.js';
 
 let lightbox = null;
 
 const $ = (sel) => document.querySelector(sel);
-const $$ = (sel) => document.querySelectorAll(sel);
+
+const DEFAULT_LABELS = {
+  heroLabel: 'WEDDING_INVITATION',
+  greetingLabel: 'GREETING',
+  greetingHeadline: 'JOIN US FOR OUR FIRST FLIGHT',
+  eventDetailsLabel: 'EVENT_DETAILS',
+  storyLabel: 'OUR_STORY',
+  directionsLabel: 'DIRECTIONS',
+  contactsLabel: 'CONTACTS',
+  uploadLabel: 'UPLOAD_YOUR_PHOTOS',
+  uploadSub: '소중한 사진과 영상을 함께 남겨주세요',
+  uploadCta: 'UPLOAD',
+  accountsLabel: 'ACCOUNTS',
+  accountsSub: '축하의 마음을 전해 주세요',
+  shareHeadline: 'SAVE_THE_DATE',
+  shareCalendarCta: 'ADD_TO_CALENDAR',
+  shareLinkCta: 'COPY_LINK',
+  shareKakaoCta: 'KAKAO_SHARE',
+  thankYouLabel: 'THANK_YOU',
+  thankYouText: '함께해 주셔서 감사합니다'
+};
+
+function renderLabels(data) {
+  const labels = { ...DEFAULT_LABELS, ...(data.design?.labels || {}) };
+  document.querySelectorAll('[data-bind-label]').forEach((el) => {
+    const key = el.dataset.bindLabel;
+    if (labels[key] != null) el.textContent = labels[key];
+  });
+}
 
 function formatParentName(parent) {
   if (!parent || !parent.name) return '';
@@ -26,9 +56,14 @@ function formatPhoneNumber(raw) {
 
 function renderHero(data, heroUrl) {
   const { groom, bride, wedding } = data;
-  $('[data-bind="couple-names"]').innerHTML =
-    `${groom.name} <span class="amp">&amp;</span> ${bride.name}`;
-  $('[data-bind="wedding-date"]').textContent = formatDate(wedding.date);
+  const spaced = (s) => [...(s || '')].join(' ');
+  $('[data-bind="groom-name"]').textContent = spaced(groom.name);
+  $('[data-bind="bride-name"]').textContent = spaced(bride.name);
+  $('[data-bind="groom-sub"]').textContent =
+    `${(groom.surnameEn || '').toUpperCase()} / ${(groom.nameEn || '').toUpperCase()}`;
+  $('[data-bind="bride-sub"]').textContent =
+    `${(bride.surnameEn || '').toUpperCase()} / ${(bride.nameEn || '').toUpperCase()}`;
+  $('[data-bind="hero-date-mono"]').textContent = formatDateMono(wedding.date);
 
   const heroImage = $('[data-bind="hero-image"]');
   if (heroUrl) {
@@ -40,7 +75,6 @@ function renderHero(data, heroUrl) {
 
 function renderGreeting(data) {
   const { groom, bride, greeting } = data;
-  $('[data-bind="greeting-title"]').textContent = greeting?.title || '초대합니다';
   $('[data-bind="greeting-body"]').textContent = greeting?.body || '';
 
   const groomParents = [formatParentName(groom.father), formatParentName(groom.mother)]
@@ -56,20 +90,58 @@ function renderGreeting(data) {
 
 function renderWeddingInfo(data) {
   const { wedding } = data;
-  $('[data-bind="info-date"]').textContent = formatDate(wedding.date);
+  const d = toJsDate(wedding.date);
+  const yy = String(d.getFullYear()).slice(-2);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const h = d.getHours();
+  const m = d.getMinutes();
+  const hour12 = h % 12 || 12;
+  const ampm = h < 12 ? 'AM' : 'PM';
+  $('[data-bind="info-date-mono"]').textContent = `${yy}·${mm}·${dd}`;
+  $('[data-bind="info-time-mono"]').textContent =
+    `${String(hour12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
   $('[data-bind="info-venue"]').textContent =
     `${wedding.venue.name}${wedding.venue.hall ? ' ' + wedding.venue.hall : ''}`;
-  $('[data-bind="info-address"]').textContent = wedding.venue.address;
-
-  if (wedding.venue.tel) {
-    const venueTel = $('[data-bind="venue-tel"]');
-    if (venueTel) {
-      venueTel.href = `tel:${formatPhoneNumber(wedding.venue.tel)}`;
-      venueTel.textContent = wedding.venue.tel;
-      venueTel.parentElement.style.display = '';
-    }
-  }
+  $('[data-bind="info-address"]').textContent = wedding.venue.address || '';
 }
+
+function renderCalendar(data) {
+  const el = $('[data-bind="calendar"]');
+  if (!el) return;
+  const d = toJsDate(data.wedding.date);
+  if (!d) return;
+  const year = d.getFullYear();
+  const month = d.getMonth();
+  const weddingDay = d.getDate();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startCol = firstDay.getDay();
+  const daysInMonth = lastDay.getDate();
+  const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const heads = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+  let html = `<p class="cal-title">${monthNames[month]} ${year}</p>`;
+  html += `<div class="cal-grid">`;
+  heads.forEach((h, i) => {
+    const cls = i === 0 ? 'sun' : i === 6 ? 'sat' : '';
+    html += `<div class="cal-head ${cls}">${h}</div>`;
+  });
+  for (let i = 0; i < startCol; i++) html += `<div class="cal-day empty"></div>`;
+  for (let day = 1; day <= daysInMonth; day++) {
+    const col = (startCol + day - 1) % 7;
+    const cls = [
+      day === weddingDay ? 'wedding' : '',
+      col === 0 ? 'sun' : '',
+      col === 6 ? 'sat' : ''
+    ].filter(Boolean).join(' ');
+    html += `<div class="cal-day ${cls}">${day}</div>`;
+  }
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+const TRANSPORT_LABEL_MAP = { subway: 'SUBWAY', bus: 'BUS', car: 'CAR', walk: 'WALK' };
 
 function renderTransport(data) {
   const container = $('[data-bind="transport-list"]');
@@ -79,7 +151,7 @@ function renderTransport(data) {
     const el = document.createElement('div');
     el.className = 'transport-item';
     const h3 = document.createElement('h3');
-    h3.textContent = item.label || '';
+    h3.textContent = TRANSPORT_LABEL_MAP[item.type] || (item.label || '').toUpperCase();
     const p = document.createElement('p');
     p.textContent = item.desc || '';
     el.append(h3, p);
@@ -131,7 +203,7 @@ function renderContacts(data) {
 
   const groups = [
     {
-      title: '신랑측',
+      title: 'GROOM_SIDE',
       main: { label: groom.name + ' (신랑)', phone: groom.phone },
       parents: [
         { label: formatParentName(groom.father) + ' (아버지)', phone: groom.father?.phone, hidden: groom.father?.deceased },
@@ -139,7 +211,7 @@ function renderContacts(data) {
       ]
     },
     {
-      title: '신부측',
+      title: 'BRIDE_SIDE',
       main: { label: bride.name + ' (신부)', phone: bride.phone },
       parents: [
         { label: formatParentName(bride.father) + ' (아버지)', phone: bride.father?.phone, hidden: bride.father?.deceased },
@@ -181,8 +253,8 @@ function renderAccounts(data) {
   const canCopy = data.features?.accountCopy !== false;
 
   const groups = [
-    { title: '신랑측', accounts: data.groom.accounts || [] },
-    { title: '신부측', accounts: data.bride.accounts || [] }
+    { title: 'GROOM', accounts: data.groom.accounts || [] },
+    { title: 'BRIDE', accounts: data.bride.accounts || [] }
   ];
 
   container.innerHTML = '';
@@ -397,10 +469,12 @@ async function init() {
     }
 
     toggleSections(data);
+    renderLabels(data);
     renderHero(data, heroUrl);
     renderDday(data);
     renderGreeting(data);
     renderWeddingInfo(data);
+    renderCalendar(data);
     renderTransport(data);
     renderMapApps(data);
     renderContacts(data);
@@ -409,6 +483,8 @@ async function init() {
     renderShareButtons(data, ogUrl);
     renderExternalLinks(data);
     injectOGTags(data, ogUrl);
+
+    await hydrateIcons();
 
     if (loading) loading.style.display = 'none';
     if (invitation) invitation.classList.add('loaded');

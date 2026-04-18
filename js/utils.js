@@ -39,6 +39,21 @@ export function formatDateShort(value) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
+export function formatDateMono(value) {
+  const d = toJsDate(value);
+  if (!d) return '';
+  const yy = String(d.getFullYear()).slice(-2);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const wd = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][d.getDay()];
+  const h = d.getHours();
+  const m = d.getMinutes();
+  const ampm = h < 12 ? 'AM' : 'PM';
+  const hour12 = h % 12 || 12;
+  const time = `${String(hour12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
+  return `${yy}·${mm}·${dd}  ·  ${wd}  ·  ${time}`;
+}
+
 export function getDday(value) {
   const target = toJsDate(value);
   if (!target) return '';

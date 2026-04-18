@@ -6,6 +6,29 @@
     font-display: swap;
 }
 
+:root {
+    --color-bg:            #F9FFFE;
+    --color-mint-pale:     #F2FCFB;
+    --color-mint-bg:       #B8E0DB;
+    --color-mint:          #81C7C0;
+    --color-mint-dark:     #6BB8B0;
+    --color-ink:           #2D2D2D;
+    --color-ink-strong:    #000000;
+    --color-gray-chevron:  #B8B8B8;
+    --color-gray-muted:    #888;
+    --color-gray-line:     #E8F5F2;
+    --color-weekday-sun:   #E57AA1;
+    --color-weekday-sat:   #5B9AD6;
+
+    --font-mono: 'OCR A', ui-monospace, 'SF Mono', Menlo, monospace;
+    --font-display: 'Orbit', sans-serif;
+    --font-sans: 'OCR A', 'Orbit', sans-serif;
+
+    --track-label: 0.25em;
+    --track-name:  0.2em;
+    --track-rail:  0.1em;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -75,15 +98,6 @@ body {
     text-align: center;
 }
 
-.section-title {
-    font-size: 14px;
-    font-weight: 400;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: #81C7C0;
-    margin-bottom: 24px;
-}
-
 .placeholder {
     background: #F2FCFB;
     border: 2px dashed #B8E0DB;
@@ -94,46 +108,62 @@ body {
     font-size: 14px;
 }
 
-/* 메인 비주얼 */
+/* Hero (상단 티켓) */
 .hero {
-    padding-top: 80px;
-    padding-bottom: 40px;
+    padding: 40px 32px 32px;
+    text-align: center;
 }
 
-.hero .label {
-    font-size: 12px;
-    letter-spacing: 6px;
-    text-transform: uppercase;
-    color: #81C7C0;
-    margin-bottom: 32px;
+.couple {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 12px;
+    margin: 32px 0 16px;
 }
 
-.hero .names {
-    font-size: 28px;
+.couple-side {
+    flex: 1;
+    min-width: 0;
+}
+
+.couple-name {
+    font-family: var(--font-display);
+    font-size: 26px;
     font-weight: 400;
-    letter-spacing: 2px;
-    line-height: 1.6;
-    margin-bottom: 12px;
+    letter-spacing: var(--track-name);
+    color: var(--color-ink);
+    line-height: 1.4;
 }
 
-.hero .amp {
-    display: block;
-    font-size: 18px;
-    color: #81C7C0;
-    margin: 4px 0;
+.couple-sub {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--color-gray-muted);
+    margin-top: 6px;
 }
 
-.hero .date {
+.couple-heart {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.hero-date {
+    font-family: var(--font-mono);
     font-size: 14px;
-    color: #888;
-    letter-spacing: 1px;
-    margin-bottom: 40px;
+    letter-spacing: 0.08em;
+    color: var(--color-ink);
+    margin-bottom: 24px;
 }
 
 .hero-image {
+    aspect-ratio: 3 / 4;
+    height: auto;
     width: calc(100% + 64px);
     margin: 0 -32px;
-    height: 460px;
+    background-color: var(--color-mint-pale);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -145,66 +175,128 @@ body {
 }
 
 .dday {
-    margin-top: 24px;
-    font-size: 18px;
-    letter-spacing: 2px;
-    color: #81C7C0;
+    margin-top: 20px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: var(--color-mint-dark);
 }
 
 /* 인사말 */
 .greeting {
-    background: #F9FFFE;
+    padding: 56px 32px;
+    text-align: center;
 }
 
 .greeting-text {
-    font-size: 15px;
+    font-size: 14px;
     line-height: 2;
-    color: #555;
+    color: var(--color-ink);
     margin-bottom: 32px;
     white-space: pre-line;
 }
 
-.parents p {
-    font-size: 14px;
-    color: #666;
-    line-height: 2;
+.parents-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px 12px;
+    border-top: 1px solid var(--color-ink);
+    padding-top: 20px;
+    text-align: left;
 }
 
-.parents strong {
-    color: #2D2D2D;
+.parents-line {
+    font-size: 13px;
+    color: var(--color-ink);
+    line-height: 1.7;
+}
+
+.parents-line strong {
+    font-weight: 700;
     margin-left: 4px;
 }
 
 /* 예식 안내 */
-.info-item {
-    margin-bottom: 24px;
+.info {
+    background: #fff;
+    padding: 56px 32px;
 }
 
-.info-item:last-child {
-    margin-bottom: 0;
-}
-
-.info-item h3 {
-    font-size: 13px;
-    font-weight: 400;
-    letter-spacing: 2px;
-    color: #81C7C0;
+.venue-name {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-ink-strong);
     margin-bottom: 8px;
+    text-align: center;
 }
 
-.info-item p {
-    font-size: 15px;
-    color: #555;
-    line-height: 1.8;
+.venue-address {
+    font-size: 13px;
+    color: var(--color-gray-muted);
+    line-height: 1.7;
+    text-align: center;
+    white-space: pre-line;
 }
 
-.address {
-    font-size: 13px !important;
-    color: #999 !important;
+/* 캘린더 위젯 */
+.calendar-widget {
+    margin-top: 40px;
+    text-align: center;
 }
 
-.info-item > p,
-.address,
+.cal-title {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    letter-spacing: 0.15em;
+    margin-bottom: 16px;
+    color: var(--color-ink);
+}
+
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px 4px;
+    max-width: 280px;
+    margin: 0 auto;
+    font-family: var(--font-mono);
+    font-size: 13px;
+}
+
+.cal-head {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--color-gray-muted);
+    padding: 4px 0;
+}
+
+.cal-head.sun,
+.cal-day.sun { color: var(--color-weekday-sun); }
+
+.cal-head.sat,
+.cal-day.sat { color: var(--color-weekday-sat); }
+
+.cal-day {
+    padding: 6px 0;
+    color: var(--color-ink);
+}
+
+.cal-day.empty { color: transparent; }
+
+.cal-day.wedding {
+    background: var(--color-mint);
+    color: #fff;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
 .transport-item p {
     white-space: pre-line;
 }
@@ -225,7 +317,7 @@ body {
 
 /* 오시는 길 */
 .location {
-    background: #F9FFFE;
+    background: var(--color-mint-pale);
 }
 
 .transport-list {
@@ -234,8 +326,8 @@ body {
 }
 
 .transport-item {
-    padding: 12px 0;
-    border-bottom: 1px solid #E8F5F2;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--color-gray-line);
 }
 
 .transport-item:last-child {
@@ -243,17 +335,19 @@ body {
 }
 
 .transport-item h3 {
-    font-size: 13px;
+    font-family: var(--font-mono);
+    font-size: 11px;
     font-weight: 400;
-    letter-spacing: 2px;
-    color: #81C7C0;
-    margin-bottom: 4px;
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    color: var(--color-ink);
+    margin-bottom: 6px;
 }
 
 .transport-item p {
     font-size: 14px;
-    color: #555;
-    line-height: 1.6;
+    color: var(--color-gray-muted);
+    line-height: 1.7;
 }
 
 .map-apps {
@@ -266,21 +360,29 @@ body {
 .map-btn {
     flex: 1;
     max-width: 120px;
-    padding: 10px;
+    padding: 12px;
     background: #fff;
-    border: 1px solid #B8E0DB;
-    color: #2D2D2D;
+    border: 1px solid var(--color-ink);
+    color: var(--color-ink);
     text-decoration: none;
-    font-family: inherit;
-    font-size: 13px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
     border-radius: 2px;
     text-align: center;
 }
 
 /* 연락처 */
+.contacts-section {
+    padding: 56px 32px;
+}
+
 .contact-group {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     text-align: left;
+    border-top: 1px solid var(--color-ink);
+    padding-top: 16px;
 }
 
 .contact-group:last-child {
@@ -288,20 +390,22 @@ body {
 }
 
 .contact-group h3 {
-    font-size: 13px;
+    font-family: var(--font-mono);
+    font-size: 11px;
     font-weight: 400;
-    letter-spacing: 2px;
-    color: #81C7C0;
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    color: var(--color-ink);
     margin-bottom: 12px;
-    text-align: center;
+    text-align: left;
 }
 
 .contact-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid #F2FCFB;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-gray-line);
 }
 
 .contact-row:last-child {
@@ -313,9 +417,12 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 10px 0;
-    border-bottom: 1px solid #F2FCFB;
-    font-size: 13px;
-    color: #999;
+    border-bottom: 1px solid var(--color-gray-line);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    color: var(--color-gray-muted);
     cursor: pointer;
     list-style: none;
     user-select: none;
@@ -332,8 +439,7 @@ body {
 }
 
 .contact-parents[open] .contact-parents-toggle {
-    color: #81C7C0;
-    border-bottom: 1px solid #E8F5F2;
+    color: var(--color-ink);
 }
 
 .contact-parents[open] .chevron {
@@ -342,7 +448,7 @@ body {
 
 .contact-label {
     font-size: 14px;
-    color: #555;
+    color: var(--color-ink);
 }
 
 .contact-actions {
@@ -351,55 +457,47 @@ body {
 }
 
 .contact-btn {
-    padding: 6px 14px;
-    background: #fff;
-    border: 1px solid #B8E0DB;
-    color: #2D2D2D;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--color-ink);
+    color: var(--color-ink);
     text-decoration: none;
-    font-family: inherit;
-    font-size: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
     border-radius: 2px;
 }
 
 /* 사진 업로드 링크 */
 .photo-link {
-    background: #F9FFFE;
+    background: #fff;
+    padding: 56px 32px;
+    text-align: center;
 }
 
-.photo-link p {
-    font-size: 14px;
-    color: #888;
+.photo-sub {
+    font-size: 13px;
+    color: var(--color-gray-muted);
     margin-bottom: 24px;
 }
 
-.btn-upload {
-    display: inline-block;
-    padding: 14px 48px;
-    background: #81C7C0;
-    color: #fff;
-    text-decoration: none;
-    font-family: 'Orbit', sans-serif;
-    font-size: 15px;
-    letter-spacing: 2px;
-    border-radius: 2px;
-    transition: background 0.2s;
-}
-
-.btn-upload:active {
-    background: #6BB8B0;
-}
-
 /* 계좌 */
-.account > p {
-    font-size: 14px;
-    color: #888;
-    margin-bottom: 32px;
+.account {
+    padding: 56px 32px;
+    text-align: center;
+}
+
+.account-sub {
+    font-size: 13px;
+    color: var(--color-gray-muted);
+    margin-bottom: 24px;
 }
 
 .account-group {
     margin-bottom: 12px;
     text-align: left;
-    border: 1px solid #E8F5F2;
+    border: 1px solid var(--color-ink);
     border-radius: 2px;
     overflow: hidden;
 }
@@ -413,13 +511,15 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 14px 16px;
-    font-size: 13px;
+    font-family: var(--font-mono);
+    font-size: 12px;
     font-weight: 400;
-    letter-spacing: 2px;
-    color: #81C7C0;
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    color: var(--color-ink);
     cursor: pointer;
     list-style: none;
-    background: #F9FFFE;
+    background: #fff;
     user-select: none;
 }
 
@@ -434,7 +534,8 @@ body {
 }
 
 .account-group[open] .account-toggle {
-    border-bottom: 1px solid #E8F5F2;
+    background: var(--color-mint-pale);
+    border-bottom: 1px solid var(--color-ink);
 }
 
 .account-group[open] .chevron {
@@ -450,7 +551,7 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 12px 0;
-    border-bottom: 1px solid #F2FCFB;
+    border-bottom: 1px solid var(--color-gray-line);
     gap: 12px;
 }
 
@@ -464,97 +565,78 @@ body {
 }
 
 .account-label {
-    font-size: 12px;
-    color: #81C7C0;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--color-gray-muted);
     margin-bottom: 2px;
-    letter-spacing: 1px;
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
 }
 
 .account-detail {
+    font-family: var(--font-mono);
     font-size: 14px;
-    color: #2D2D2D;
+    color: var(--color-ink);
     font-variant-numeric: tabular-nums;
     word-break: break-all;
 }
 
 .account-holder {
     font-size: 12px;
-    color: #999;
+    color: var(--color-gray-muted);
     margin-top: 2px;
 }
 
 .account-copy {
-    padding: 8px 14px;
-    background: #fff;
-    border: 1px solid #B8E0DB;
-    color: #2D2D2D;
-    font-family: inherit;
-    font-size: 12px;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--color-ink);
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
     border-radius: 2px;
     cursor: pointer;
     flex-shrink: 0;
 }
 
 .account-copy:active {
-    background: #F2FCFB;
+    opacity: 0.7;
 }
 
 /* 공유 */
 .share-section {
-    background: #F9FFFE;
+    padding: 56px 32px;
+    text-align: center;
 }
 
 .share-buttons {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    max-width: 280px;
+    gap: 10px;
+    max-width: 300px;
     margin: 0 auto;
-}
-
-.share-btn {
-    padding: 12px;
-    background: #fff;
-    border: 1px solid #B8E0DB;
-    color: #2D2D2D;
-    font-family: inherit;
-    font-size: 14px;
-    border-radius: 2px;
-    cursor: pointer;
-}
-
-.share-btn:active {
-    background: #F2FCFB;
 }
 
 /* 화환 */
 .flower-section {
     padding-top: 0;
-}
-
-.btn-outline {
-    display: inline-block;
-    padding: 12px 40px;
-    background: #fff;
-    border: 1px solid #81C7C0;
-    color: #81C7C0;
-    text-decoration: none;
-    font-family: inherit;
-    font-size: 14px;
-    letter-spacing: 1px;
-    border-radius: 2px;
+    text-align: center;
 }
 
 /* 푸터 */
 footer {
-    padding: 48px 32px;
+    padding: 56px 32px 32px;
     text-align: center;
+    background: #fff;
 }
 
 .footer-text {
-    font-size: 13px;
-    color: #bbb;
-    letter-spacing: 4px;
+    font-size: 12px;
+    color: var(--color-gray-muted);
+    letter-spacing: 0.1em;
+    margin-top: 12px;
 }
 
 /* 토스트 */
@@ -716,4 +798,119 @@ footer {
     color: rgba(255, 255, 255, 0.7);
     font-size: 12px;
     text-align: center;
+}
+
+/* 디자인 공용 컴포넌트 (Boarding Pass 시스템) */
+
+.section-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    color: var(--color-ink);
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.kv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px 12px;
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+.kv-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    color: var(--color-gray-muted);
+    margin-bottom: 6px;
+}
+
+.kv-value {
+    font-family: var(--font-mono);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-ink-strong);
+}
+
+.btn-mono {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    padding: 14px 24px;
+    background: var(--color-ink-strong);
+    color: #fff;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-mono.outline {
+    background: transparent;
+    color: var(--color-ink-strong);
+    border: 1px solid var(--color-ink-strong);
+}
+
+.btn-mono.mint {
+    background: var(--color-mint);
+    color: #fff;
+}
+
+.btn-mono:active {
+    opacity: 0.85;
+}
+
+.icon-inline {
+    display: inline-flex;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
+    color: inherit;
+}
+
+.icon-inline svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+.icon-mint { color: var(--color-mint); }
+.icon-ink  { color: var(--color-ink-strong); }
+
+.divider {
+    height: 1px;
+    background: var(--color-ink);
+    margin: 12px 0 24px;
+}
+
+.headline-en {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-strong);
+    margin: 20px 0 24px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.headline-en.big {
+    font-size: 22px;
+    letter-spacing: 0.1em;
+    margin-bottom: 32px;
+}
+
+.mint-panel {
+    background: var(--color-mint-bg);
 }
