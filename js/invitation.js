@@ -49,14 +49,21 @@ function renderRails(data) {
   if (!d) return;
   const ymd = `${d.getFullYear()}_${String(d.getMonth() + 1).padStart(2, '0')}_${String(d.getDate()).padStart(2, '0')}`;
   const parts = [
-    '>>>>>>', 'WEDDING_PASS', '>>>>',
-    `FLIGHT_${ymd}`, '>>>>',
+    'WEDDING_PASS',
+    `FLIGHT_${ymd}`,
     `${(groom.nameEn || '').toUpperCase()}_AND_${(bride.nameEn || '').toUpperCase()}`,
-    '>>>>>>'
+    'NAMSAN_ARTS_WEDDING_HALL',
+    'BOARDING_AT_11_00_AM'
   ];
-  const txt = parts.join(' ');
-  document.querySelectorAll('[data-bind="rail-top"], [data-bind="rail-bottom"]')
-    .forEach((el) => { el.textContent = txt; });
+  const sep = ' >>>> ';
+  const txt = parts.join(sep) + sep;
+  document.querySelectorAll('[data-bind="rail-top"], [data-bind="rail-bottom"]').forEach((el) => {
+    el.innerHTML = `
+      <div class="rail__track">
+        <span class="rail__text">${txt}</span>
+        <span class="rail__text" aria-hidden="true">${txt}</span>
+      </div>`;
+  });
 }
 
 function formatParentName(parent) {
@@ -210,8 +217,8 @@ function renderContacts(data) {
     row.innerHTML = `
       <span class="contact-label">${p.label}</span>
       <div class="contact-actions">
-        <a class="contact-btn" href="tel:${tel}" aria-label="전화">전화</a>
-        <a class="contact-btn" href="sms:${tel}" aria-label="문자">문자</a>
+        <a class="contact-btn icon-inline" href="tel:${tel}" aria-label="전화" data-icon="phone"></a>
+        <a class="contact-btn icon-inline" href="sms:${tel}" aria-label="문자" data-icon="message"></a>
       </div>
     `;
     return row;

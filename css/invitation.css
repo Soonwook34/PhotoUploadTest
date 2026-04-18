@@ -94,7 +94,7 @@ body {
 
 /* 섹션 공통 */
 .section {
-    padding: 60px 32px;
+    padding: 48px 32px;
     text-align: center;
 }
 
@@ -129,7 +129,7 @@ body {
 
 .couple-name {
     font-family: var(--font-display);
-    font-size: 26px;
+    font-size: 28px;
     font-weight: 400;
     letter-spacing: var(--track-name);
     color: var(--color-ink);
@@ -138,15 +138,15 @@ body {
 
 .couple-sub {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.15em;
     color: var(--color-gray-muted);
     margin-top: 6px;
 }
 
 .couple-heart {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     flex-shrink: 0;
 }
 
@@ -184,7 +184,7 @@ body {
 
 /* 인사말 */
 .greeting {
-    padding: 56px 32px;
+    padding: 48px 32px;
     text-align: center;
 }
 
@@ -219,7 +219,7 @@ body {
 /* 예식 안내 */
 .info {
     background: #fff;
-    padding: 56px 32px;
+    padding: 48px 32px;
 }
 
 .venue-name {
@@ -288,8 +288,8 @@ body {
     background: var(--color-mint);
     color: #fff;
     border-radius: 50%;
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     margin: 0 auto;
     display: flex;
     align-items: center;
@@ -375,7 +375,7 @@ body {
 
 /* 연락처 */
 .contacts-section {
-    padding: 56px 32px;
+    padding: 48px 32px;
 }
 
 .contact-group {
@@ -457,22 +457,28 @@ body {
 }
 
 .contact-btn {
-    padding: 6px 12px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: transparent;
     border: 1px solid var(--color-ink);
     color: var(--color-ink);
     text-decoration: none;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: var(--track-label);
-    text-transform: uppercase;
     border-radius: 2px;
+}
+
+.contact-btn svg {
+    width: 16px;
+    height: 16px;
 }
 
 /* 사진 업로드 링크 */
 .photo-link {
     background: #fff;
-    padding: 56px 32px;
+    padding: 48px 32px;
     text-align: center;
 }
 
@@ -484,7 +490,7 @@ body {
 
 /* 계좌 */
 .account {
-    padding: 56px 32px;
+    padding: 48px 32px;
     text-align: center;
 }
 
@@ -607,7 +613,7 @@ body {
 
 /* 공유 */
 .share-section {
-    padding: 56px 32px;
+    padding: 48px 32px;
     text-align: center;
 }
 
@@ -813,28 +819,64 @@ footer {
 }
 
 .rail {
+    overflow: hidden;
+    padding: 10px 0;
+    border-top: 1px solid var(--color-gray-line);
+    border-bottom: 1px solid var(--color-gray-line);
+    background: #fff;
+}
+
+.rail__track {
+    display: flex;
+    width: max-content;
+    animation: rail-scroll 40s linear infinite;
+}
+
+.rail__text {
     font-family: var(--font-mono);
     font-size: 10px;
     color: var(--color-gray-chevron);
     letter-spacing: var(--track-rail);
-    padding: 12px 24px;
-    border-top: 1px solid var(--color-gray-line);
-    border-bottom: 1px solid var(--color-gray-line);
     white-space: nowrap;
-    overflow: hidden;
-    text-align: center;
-    text-overflow: ellipsis;
+    flex-shrink: 0;
+}
+
+@keyframes rail-scroll {
+    from { transform: translateX(-50%); }
+    to   { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rail__track { animation: none; }
 }
 
 .perforation {
-    height: 2px;
-    margin: 0 32px;
-    background-image: radial-gradient(circle, currentColor 1px, transparent 1.5px);
-    background-size: 8px 2px;
-    background-repeat: repeat-x;
-    color: var(--color-gray-chevron);
-    opacity: 0.6;
+    position: relative;
+    height: 1px;
+    margin: 0 40px;
+    background-image: linear-gradient(
+        to right,
+        var(--color-ink) 0, var(--color-ink) 4px,
+        transparent 4px, transparent 10px
+    );
+    background-size: 10px 1px;
+    opacity: 0.25;
 }
+
+.perforation::before,
+.perforation::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--color-ink);
+    transform: translateY(-50%);
+}
+
+.perforation::before { left: -8px; }
+.perforation::after  { right: -8px; }
 
 .kv-grid {
     display: grid;
@@ -855,7 +897,7 @@ footer {
 
 .kv-value {
     font-family: var(--font-mono);
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 700;
     letter-spacing: 0.04em;
     color: var(--color-ink-strong);
@@ -870,7 +912,7 @@ footer {
     font-size: 12px;
     letter-spacing: var(--track-label);
     text-transform: uppercase;
-    padding: 14px 24px;
+    padding: 16px 32px;
     background: var(--color-ink-strong);
     color: #fff;
     border: none;
@@ -924,15 +966,25 @@ footer {
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--color-ink-strong);
-    margin: 20px 0 24px;
+    margin: 20px 0 16px;
     line-height: 1.5;
     text-align: center;
 }
 
 .headline-en.big {
-    font-size: 22px;
+    font-size: 24px;
     letter-spacing: 0.1em;
-    margin-bottom: 32px;
+    margin-bottom: 20px;
+}
+
+.headline-icon {
+    display: block;
+    margin: 0 auto 24px;
+}
+
+.cta-icon {
+    display: block;
+    margin: 14px auto 0;
 }
 
 .mint-panel {
