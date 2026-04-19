@@ -24,8 +24,8 @@
     --font-display: 'Orbit', sans-serif;
     --font-sans: 'OCR A', 'Orbit', sans-serif;
 
-    --flap-bg-top:    #2a2a2a;
-    --flap-bg-bottom: #1a1a1a;
+    --flap-bg-top:    #C8E7E2;
+    --flap-bg-bottom: #B8E0DB;
 
     --track-label: 0.25em;
     --track-name:  0.2em;
@@ -181,7 +181,7 @@ body {
 
 .couple-heart {
     flex-shrink: 0;
-    margin-top: 3px;
+    margin-top: 8px;
 }
 
 .hero-date {
@@ -1033,7 +1033,7 @@ footer {
     font-family: var(--font-mono);
     font-size: 26px;
     font-weight: 700;
-    color: var(--color-mint);
+    color: var(--color-ink-strong);
     perspective: 200px;
 }
 
@@ -1045,7 +1045,10 @@ footer {
     height: 50%;
     overflow: hidden;
     border-radius: 2px;
-    backface-visibility: hidden;
+}
+
+.flap__fold {
+    will-change: transform;
 }
 
 .flap__half--top,
@@ -1102,7 +1105,7 @@ footer {
     top: 50%;
     height: 1px;
     transform: translateY(-0.5px);
-    background: rgba(0, 0, 0, 0.65);
+    background: rgba(0, 0, 0, 0.3);
     z-index: 3;
     pointer-events: none;
 }
@@ -1114,7 +1117,7 @@ footer {
     top: 50%;
     width: 3px;
     height: 4px;
-    background: #4a4a4a;
+    background: var(--color-mint-dark);
     border-radius: 1px;
     transform: translateY(-50%);
 }
