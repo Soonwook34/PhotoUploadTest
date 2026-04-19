@@ -28,7 +28,7 @@ export function setFlap(flapEl, newChar) {
     chars[1].textContent = newChar;
     chars[2].textContent = newChar;
     flapEl.classList.remove('flap--flipping');
-  }, 550);
+  }, 350);
 }
 
 export function startFlipboard(container, { target, title }) {

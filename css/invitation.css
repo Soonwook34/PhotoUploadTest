@@ -24,8 +24,8 @@
     --font-display: 'Orbit', sans-serif;
     --font-sans: 'OCR A', 'Orbit', sans-serif;
 
-    --flap-bg-top:    #C8E7E2;
-    --flap-bg-bottom: #B8E0DB;
+    --flap-bg-top:    #F2FCFB;
+    --flap-bg-bottom: #D6EAE5;
 
     --track-label: 0.25em;
     --track-name:  0.2em;
@@ -1105,7 +1105,7 @@ footer {
     top: 50%;
     height: 1px;
     transform: translateY(-0.5px);
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.15);
     z-index: 3;
     pointer-events: none;
 }
@@ -1126,11 +1126,11 @@ footer {
 .flap__hinge::after  { right: -2px; }
 
 .flap--flipping .flap__fold--down {
-    animation: flap-fold-down 0.25s ease-in forwards;
+    animation: flap-fold-down 0.15s ease-in forwards;
 }
 
 .flap--flipping .flap__fold--up {
-    animation: flap-fold-up 0.25s 0.25s ease-out forwards;
+    animation: flap-fold-up 0.15s 0.15s ease-out forwards;
 }
 
 @keyframes flap-fold-down {
